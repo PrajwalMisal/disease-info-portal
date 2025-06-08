@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <title>रोग माहिती आणि उपाय</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f0f8ff, #dff0ea);
+      margin: 0;
+      padding: 20px;
+    }
+    .toggle {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .toggle button {
+      padding: 10px 20px;
+      border: none;
+      background: #008080;
+      color: white;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    select {
+      width: 50%;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #infoBox {
+      background: #ffffffcc;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+      max-width: 700px;
+      margin: auto;
+    }
+    .upay {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+    .upay li {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+<button onclick="location.href='doctor info.html'">Doctor Info</button>
+  <div class="toggle">
+    <button onclick="setLanguage('mr')">मराठी</button>
+    <button onclick="setLanguage('en')">English</button>
+  </div>
+
+  <div class="title" id="title">रोग माहिती आणि उपाय</div>
+
+  <div class="search-bar">
+    <select id="diseaseSelect" onchange="showDiseaseInfo()">
+      <option value="">-- रोग निवडा / Select Disease --</option>
+    </select>
+  </div>
+
+  <div id="infoBox"></div>
+  <footer style="text-align: center; font-size: 14px; color: #888; margin-top: 40px;">
+  <hr style="width: 60%; margin: 20px auto;">
+  <p>Designed and Developed by <strong>MR. PRAJWAL BABASAHEB MISAL</strong></p>
+</footer>
+
+
+  <script>
+    let currentLang = 'mr';
+
+    const diseaseList = [
+      { en: "Asthma", mr: "दमा" },
+      { en: "Diabetes", mr: "मधुमेह" },
+      { en: "Hypertension", mr: "उच्च रक्तदाब" },
+      { en: "Tuberculosis", mr: "क्षयरोग" },
+      { en: "Malaria", mr: "मलेरिया" },
+      { en: "Dengue", mr: "डेंग्यू" },
+      { en: "Typhoid", mr: "टायफॉईड" },
+      { en: "Jaundice", mr: "पिवळ्या कावळ्या" },
+      { en: "Anemia", mr: "अशक्तता" },
+      { en: "Migraine", mr: "अर्धशिशी" },
+      { en: "Arthritis", mr: "संधिवात" },
+      { en: "Epilepsy", mr: "फिट्स/अपस्मार" },
+      { en: "Depression", mr: "नैराश्य" },
+      { en: "Anxiety", mr: "चिंता" },
+  { en: "Chickenpox", mr: "कांजिण्या" },
+  { en: "Measles", mr: "गोवर" },
+  { en: "Mumps", mr: "गालगुंड" },
+  { en: "Hepatitis A", mr: "हिपॅटायटिस अ" },
+  { en: "Hepatitis B", mr: "हिपॅटायटिस बी" },
+  { en: "Hepatitis C", mr: "हिपॅटायटिस सी" },
+  { en: "COVID-19", mr: "कोविड-१९" },
+  { en: "Influenza (Flu)", mr: "फ्लू" },
+  { en: "Common Cold", mr: "सर्दी" },
+  { en: "Tonsillitis", mr: "टॉन्सिल्स" },
+  { en: "Urinary Tract Infection (UTI)", mr: "मूत्रमार्ग संक्रमण" },
+  { en: "Kidney Stones", mr: "मूत्राशयातील खडे" },
+  { en: "Gallstones", mr: "पित्ताशयातील खडे" },
+  { en: "Liver Cirrhosis", mr: "यकृत सिरोसिस" },
+  { en: "Fatty Liver", mr: "चरबीयुक्त यकृत" },
+  { en: "Piles (Hemorrhoids)", mr: "मुळव्याध" },
+  { en: "Fissure", mr: "फिशर" },
+  { en: "Fistula", mr: "भगंदर" },
+  { en: "Heart Attack", mr: "हृदयविकाराचा झटका" },
+  { en: "Stroke", mr: "मेंदूचा झटका" },
+  { en: "Paralysis", mr: "अर्धांगवायू" },
+  { en: "Cancer", mr: "कर्करोग" },
+  { en: "Leukemia", mr: "रक्ताचा कर्करोग" },
+  { en: "Breast Cancer", mr: "स्तनाचा कर्करोग" },
+  { en: "Cervical Cancer", mr: "गर्भाशयाच्या मुखाचा कर्करोग" },
+  { en: "Skin Allergy", mr: "त्वचारोग" },
+  { en: "Psoriasis", mr: "सोरायसिस" },
+  { en: "Eczema", mr: "खरुज" },
+  { en: "Ringworm", mr: "दाद" },
+  { en: "Scabies", mr: "खाज" },
+  { en: "Acne", mr: "मुरुम" },
+  { en: "Hair Loss (Alopecia)", mr: "केस गळणे" },
+  { en: "Obesity", mr: "लठ्ठपणा" },
+  { en: "Thyroid Disorder", mr: "थायरॉईड समस्या" },
+  { en: "Hypothyroidism", mr: "थायरॉईड कमी होणे" },
+  { en: "Hyperthyroidism", mr: "थायरॉईड जास्त होणे" },
+  { en: "Polio", mr: "पोलिओ" },
+  { en: "Rabies", mr: "रेबीज" },
+  { en: "Snake Bite", mr: "सर्पदंश" },
+  { en: "Dog Bite", mr: "कुत्रा चावा" },
+  { en: "Swine Flu", mr: "स्वाईन फ्लू" },
+  { en: "Bird Flu", mr: "बर्ड फ्लू" },
+  { en: "HIV/AIDS", mr: "एचआयव्ही / एड्स" },
+  { en: "Lupus", mr: "ल्यूपस" },
+  { en: "Autism", mr: "स्वमग्नता" },
+  { en: "ADHD", mr: "लक्ष विचलन विकार" },
+  { en: "Learning Disability", mr: "शिकण्याची अडचण" },
+  { en: "Speech Disorder", mr: "वाचा विकार" },
+  { en: "Constipation", mr: "बद्धकोष्ठता" },
+  { en: "Diarrhea", mr: "अतिसार" },
+  { en: "Vomiting", mr: "उलटी" },
+  { en: "Gastric Ulcer", mr: "आम्लपित्त" },
+  { en: "Acidity", mr: "अॅसिडिटी" },
+  { en: "Heartburn", mr: "छातीत जळजळ" },
+  { en: "Back Pain", mr: "पाठदुखी" },
+  { en: "Neck Pain", mr: "मानेचा त्रास" },
+  { en: "Joint Pain", mr: "सांधेदुखी" },
+  { en: "Leg Cramps", mr: "पायात गोळे येणे" },
+  { en: "Vertigo", mr: "भोवळ" },
+  { en: "Insomnia", mr: "झोप न येणे" },
+  { en: "Nightmares", mr: "वाईट स्वप्न" },
+  { en: "Snoring", mr: "घोरणे" },
+  { en: "Sleep Apnea", mr: "झोपेत श्वासोच्छ्वास थांबणे" },
+  { en: "Dehydration", mr: "निर्जलीकरण" },
+  { en: "Heat Stroke", mr: "उष्माघात" },
+  { en: "Sunburn", mr: "उन्हामुळे त्वचा जळणे" },
+  { en: "Boils", mr: "फोड" },
+  { en: "Abscess", mr: "फोड किंवा गाठ" },
+  { en: "Appendicitis", mr: "अपेंडिक्सचा त्रास" },
+  { en: "Hernia", mr: "गाठ / हर्निया" },
+  { en: "Varicose Veins", mr: "व्हेरिकोज व्हेन्स" },
+  { en: "Cataract", mr: "मोतीबिंदू" },
+  { en: "Glaucoma", mr: "काळा मोती" },
+  { en: "Conjunctivitis", mr: "डोळ्यांचा दाह (आंख आना)" },
+  { en: "Dry Eyes", mr: "डोळे कोरडे पडणे" },
+  { en: "Tooth Decay", mr: "दात पोखरणे" },
+  { en: "Gingivitis", mr: "हिरड्यांची सूज" },
+  { en: "Bad Breath", mr: "तोंडाचा वास" },
+  { en: "Tonsil Stones", mr: "टॉन्सिल मध्ये खडे" },
+  { en: "Sore Throat", mr: "घसा दुखणे" },
+  { en: "Hiccups", mr: "उचक्या" },
+  { en: "Nausea", mr: "मळमळ" },
+  { en: "Bloating", mr: "फुगलेपण" },
+  { en: "Flatulence", mr: "पोटात वायू" },
+  { en: "IBS (Irritable Bowel Syndrome)", mr: "चिडचिडीत आतड्याचा विकार" },
+  { en: "GERD (Acid Reflux)", mr: "आम्लपित्त परावर्तन" },
+  { en: "Cholera", mr: "कॉलरा" },
+  { en: "Leptospirosis", mr: "लेप्टोस्पायरोसिस" },
+  { en: "Tetanus", mr: "धनुर्वात" },
+  { en: "Meningitis", mr: "मेंदुज्वर" },
+  { en: "Brain Tumor", mr: "मेंदूचा गाठ" },
+  { en: "Memory Loss", mr: "विस्मरण" },
+  { en: "Amnesia", mr: "स्मृतिभ्रंश" },
+  { en: "Glomerulonephritis", mr: "मूत्रपिंडाचा दाह" },
+  { en: "Nephrotic Syndrome", mr: "मूत्रपिंड विकृती" },
+  { en: "Enlarged Prostate", mr: "प्रोस्टेट वाढणे" },
+  { en: "Erectile Dysfunction", mr: "नपुंसकता" },
+  { en: "Infertility", mr: "वंध्यत्व" },
+  { en: "Menstrual Cramps", mr: "पाळीच्या वेदना" },
+  { en: "PCOS (Polycystic Ovary)", mr: "पॉलिसिस्टिक ओव्हरी सिंड्रोम" },
+  { en: "Endometriosis", mr: "एंडोमेट्रियोसिस" },
+  { en: "Uterine Fibroids", mr: "गर्भाशयातील गाठ" },
+  { en: "Ovarian Cyst", mr: "अंडाशयात गाठ" },
+  { en: "Breast Lump", mr: "स्तनातील गाठ" },
+  { en: "Hormonal Imbalance", mr: "संप्रेरक असंतुलन" },
+  { en: "Heat Rash", mr: "घामोळी" },
+  { en: "Scalp Infection", mr: "डोक्याच्या त्वचेला इन्फेक्शन" },
+  { en: "Nail Fungus", mr: "नखांचे बुरशीजन्य संक्रमण" },
+  { en: "Oral Thrush", mr: "तोंडात बुरशी" },
+  { en: "Tongue Ulcers", mr: "जिभेवर फोड" },
+  { en: "Lip Cracks", mr: "ओठांवर फट" }
+      // Add remaining from your list if needed
+    ];
+
+  const diseaseInfo = {
+  asthma: {
+    name: { en: "Asthma", mr: "दमा" },
+    info: {
+      en: "Asthma is a chronic disease related to breathing. Airways narrow causing difficulty breathing. Triggered by dust, pollution or allergies.",
+      mr: "दमा हा श्वासोच्छ्वासाचा दीर्घकालीन आजार आहे. श्वासनलिका आकुंचित होतात ज्यामुळे श्वास घेण्यात त्रास होतो. धूळ, प्रदूषण किंवा ॲलर्जीमुळे वाढतो."
+    },
+    upay: {
+      en: [
+        "Use inhaler regularly.",
+        "Avoid dust and smoke.",
+        "Take medicines on time.",
+        "Practice yoga and breathing exercises.",
+        "Follow doctor's advice."
+      ],
+      mr: [
+        "इनहेलरचा नियमित वापर करावा.",
+        "धूळ व धूर टाळा.",
+        "औषधे वेळेवर घ्या.",
+        "योग व प्राणायाम करा.",
+        "डॉक्टरांचा सल्ला पाळा."
+      ]
+    }
+  },
+
+  diabetes: {
+    name: { en: "Diabetes", mr: "मधुमेह" },
+    info: {
+      en: "A disease causing high blood sugar due to insulin deficiency. Symptoms: frequent thirst and urination.",
+      mr: "इन्सुलिनच्या अभावामुळे रक्तातील साखर वाढते. लक्षणे: सतत तहान लागणे व वारंवार लघवी."
+    },
+    upay: {
+      en: [
+        "Control sugar intake.",
+        "Exercise regularly.",
+        "Take medicines as prescribed.",
+        "Manage stress and sleep well.",
+        "Monitor blood sugar levels."
+      ],
+      mr: [
+        "साखर नियंत्रित करा.",
+        "नियमित व्यायाम करा.",
+        "औषधे घ्या.",
+        "ताण कमी ठेवा व झोप घ्या.",
+        "रक्तातील साखर तपासा."
+      ]
+    }
+  },
+
+  hypertension: {
+    name: { en: "Hypertension", mr: "उच्च रक्तदाब" },
+    info: {
+      en: "Condition where blood pressure is elevated, leading to heart risks.",
+      mr: "रक्तदाब वाढल्यामुळे हृदयाला धोका."
+    },
+    upay: {
+      en: [
+        "Avoid excess salt.",
+        "Exercise daily.",
+        "Reduce stress.",
+        "Take medicines regularly.",
+        "Monitor blood pressure."
+      ],
+      mr: [
+        "मीठ कमी करा.",
+        "रोज व्यायाम करा.",
+        "ताण कमी करा.",
+        "औषधे वेळेवर घ्या.",
+        "रक्तदाब तपासा."
+      ]
+    }
+  },
+
+  tuberculosis: {
+    name: { en: "Tuberculosis", mr: "क्षयरोग" },
+    info: {
+      en: "Infectious disease mainly affecting lungs caused by bacteria.",
+      mr: "फुफ्फुसांवर परिणाम करणारा संसर्गजन्य आजार."
+    },
+    upay: {
+      en: [
+        "Take DOTS medicines completely.",
+        "Eat nutritious food.",
+        "Rest adequately.",
+        "Avoid spreading sputum.",
+        "Follow doctor’s advice."
+      ],
+      mr: [
+        "DOTS औषधे पूर्ण घ्या.",
+        "सकस आहार घ्या.",
+        "पुरेशी विश्रांती घ्या.",
+        "थुंकी टाळा.",
+        "डॉक्टरांचा सल्ला पाळा."
+      ]
+    }
+  },
+
+  pneumonia: {
+    name: { en: "Pneumonia", mr: "न्यूमोनिया" },
+    info: {
+      en: "Lung infection caused by bacteria, viruses or fungi. Symptoms include fever and cough.",
+      mr: "फुफ्फुसांचा संसर्गजन्य आजार. ताप, खोकला लक्षणे."
+    },
+    upay: {
+      en: [
+        "Take antibiotics as prescribed.",
+        "Get plenty of rest.",
+        "Drink fluids.",
+        "Use steam inhalation.",
+        "Get vaccinated."
+      ],
+      mr: [
+        "अँटीबायोटिक्स घ्या.",
+        "पुरेशी विश्रांती घ्या.",
+        "पाणी प्यावे.",
+        "वाफे घेणे उपयुक्त.",
+        "लस घेतली पाहिजे."
+      ]
+    }
+  },
+
+  malaria: {
+    name: { en: "Malaria", mr: "मलेरिया" },
+    info: {
+      en: "Mosquito-borne infectious disease causing fever and chills.",
+      mr: "डासांमार्फत होणारा तापाचा संसर्ग."
+    },
+    upay: {
+      en: [
+        "Take antimalarial medicines.",
+        "Use mosquito nets.",
+        "Avoid stagnant water.",
+        "Wear full clothes.",
+        "Consult doctor if fever persists."
+      ],
+      mr: [
+        "मलेरिया औषधे घ्या.",
+        "डासांपासून बचाव करा.",
+        "स्थिर पाणी टाळा.",
+        "पूर्ण कपडे घाला.",
+        "ताप टिकल्यास डॉक्टरांना भेटा."
+      ]
+    }
+  },
+
+  dengue: {
+    name: { en: "Dengue", mr: "डेंग्यू" },
+    info: {
+      en: "Mosquito-borne viral infection causing high fever and pain.",
+      mr: "डासांमार्फत होणारा तापजन्य संसर्ग."
+    },
+    upay: {
+      en: [
+        "Avoid mosquito bites.",
+        "Use repellents and nets.",
+        "Drink plenty of fluids.",
+        "Rest well.",
+        "Seek medical help if symptoms worsen."
+      ],
+      mr: [
+        "डासांपासून बचाव करा.",
+        "रेपेलंट व जाळी वापरा.",
+        "पाणी पुरेसे प्यावे.",
+        "विश्रांती घ्या.",
+        "लक्षणे वाईट झाल्यास डॉक्टरांना भेटा."
+      ]
+    }
+  },
+
+  typhoid: {
+    name: { en: "Typhoid", mr: "टायफॉईड" },
+    info: {
+      en: "Bacterial infection causing prolonged fever and weakness.",
+      mr: "बॅक्टेरियामुळे होणारा तापजन्य आजार."
+    },
+    upay: {
+      en: [
+        "Take antibiotics as prescribed.",
+        "Maintain hygiene and clean water.",
+        "Eat healthy food.",
+        "Rest adequately.",
+        "Avoid street food."
+      ],
+      mr: [
+        "अँटीबायोटिक्स घ्या.",
+        "स्वच्छता व स्वच्छ पाणी वापरा.",
+        "सुकाणे अन्न खा.",
+        "पुरेशी विश्रांती घ्या.",
+        "घराबाहेरचे अन्न टाळा."
+      ]
+    }
+  },
+
+  jaundice: {
+    name: { en: "Jaundice", mr: "पिवळ्या कावळ्या" },
+    info: {
+      en: "A liver condition causing yellowing of skin and eyes.",
+      mr: "यकृताचा आजार ज्यामुळे त्वचा व डोळे पिवळे होतात."
+    },
+    upay: {
+      en: [
+        "Maintain liver-friendly diet.",
+        "Avoid alcohol.",
+        "Drink plenty of water.",
+        "Rest well.",
+        "Consult doctor for treatment."
+      ],
+      mr: [
+        "यकृतास अनुकूल आहार घ्या.",
+        "दारू टाळा.",
+        "पाणी पुरेसे प्यावे.",
+        "विश्रांती घ्या.",
+        "डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  anemia: {
+    name: { en: "Anemia", mr: "अशक्तता" },
+    info: {
+      en: "A condition where there is lack of enough healthy red blood cells.",
+      mr: "लोहाच्या कमतरतेमुळे होणारी कमजोरी."
+    },
+    upay: {
+      en: [
+        "Eat iron-rich foods.",
+        "Take iron supplements if prescribed.",
+        "Eat fruits and vegetables.",
+        "Avoid excessive tea or coffee.",
+        "Consult doctor regularly."
+      ],
+      mr: [
+        "लोहयुक्त आहार घ्या.",
+        "आवश्यक असल्यास लोहाचे औषध घ्या.",
+        "फळे आणि भाज्या खा.",
+        "चहा कॉफी कमी प्या.",
+        "डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  migraine: {
+    name: { en: "Migraine", mr: "अर्धशिशी" },
+    info: {
+      en: "A neurological condition causing severe headaches and sensitivity to light.",
+      mr: "कडकडीत डोकेदुखी होणे, प्रकाशास संवेदनशीलता."
+    },
+    upay: {
+      en: [
+        "Avoid triggers like loud noise and bright light.",
+        "Take prescribed medications.",
+        "Maintain regular sleep.",
+        "Practice relaxation techniques.",
+        "Stay hydrated."
+      ],
+      mr: [
+        "ध्वनी व तेजस्वी प्रकाश टाळा.",
+        "औषधे वेळेवर घ्या.",
+        "नियमित झोप घ्या.",
+        "विश्रांतीसाठी तंत्र वापरा.",
+        "पाणी पुरेसे प्या."
+      ]
+    }
+  },
+
+  arthritis: {
+    name: { en: "Arthritis", mr: "संधिवात" },
+    info: {
+      en: "Inflammation of joints causing pain and stiffness.",
+      mr: "संधीचा वेदना व कडकपणा होणे."
+    },
+    upay: {
+      en: [
+        "Exercise regularly.",
+        "Maintain healthy weight.",
+        "Use pain relief medications.",
+        "Apply warm compresses.",
+        "Consult doctor for therapy."
+      ],
+      mr: [
+        "नियमित व्यायाम करा.",
+        "तंदुरुस्त वजन ठेवा.",
+        "दुखापासून सुटका करण्याची औषधे वापरा.",
+        "उष्णता देणारे संपीडन करा.",
+        "डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+ 
+
+  chickenpox: {
+    name: { en: "Chickenpox", mr: "कांजिण्या" },
+    info: {
+      en: "A contagious viral infection causing itchy rash and fever.",
+      mr: "संसर्गजन्य विषाणूजन्य आजार ज्यामुळे त्वचेवर पुरळ व ताप येतो."
+    },
+    upay: {
+      en: [
+        "Keep skin clean and dry.",
+        "Avoid scratching.",
+        "Take antiviral medications if prescribed.",
+        "Use calamine lotion.",
+        "Isolate to prevent spread."
+      ],
+      mr: [
+        "त्वचा स्वच्छ व कोरडी ठेवा.",
+        "खाजवू नका.",
+        "औषधे घ्या.",
+        "कॅलामाईन लोशन वापरा.",
+        "संक्रमण टाळण्यासाठी वेगळे रहा."
+      ]
+    }
+  },
+
+  measles: {
+    name: { en: "Measles", mr: "गोवर" },
+    info: {
+      en: "A highly contagious viral disease causing rash and fever.",
+      mr: "अत्यंत संसर्गजन्य विषाणूजन्य आजार ज्यामुळे पुरळ व ताप येतो."
+    },
+    upay: {
+      en: [
+        "Get vaccinated.",
+        "Maintain hygiene.",
+        "Isolate infected person.",
+        "Provide nutritious food.",
+        "Consult doctor if needed."
+      ],
+      mr: [
+        "लस घ्या.",
+        "स्वच्छता ठेवा.",
+        "रुग्ण वेगळे ठेवा.",
+        "सकस आहार द्या.",
+        "डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  mumps: {
+    name: { en: "Mumps", mr: "गालगुंड" },
+    info: {
+      en: "Viral infection causing swollen salivary glands.",
+      mr: "विषाणूजन्य आजार ज्यामुळे तोंडाच्या श्लेष्मलिंपात सूज येते."
+    },
+    upay: {
+      en: [
+        "Rest well.",
+        "Take pain relievers.",
+        "Avoid sour foods.",
+        "Maintain hygiene.",
+        "Consult doctor if symptoms worsen."
+      ],
+      mr: [
+        "पुरेशी विश्रांती घ्या.",
+        "दुखापासून सुटका करण्याची औषधे घ्या.",
+        "आंबट अन्न टाळा.",
+        "स्वच्छता ठेवा.",
+        "लक्षणे वाढल्यास डॉक्टरांना भेटा."
+      
+      ]
+    }
+  },
+  hepatitis_a: {
+  name: { en: "Hepatitis A", mr: "हिपॅटायटिस अ" },
+  info: {
+    en: "Liver infection caused by Hepatitis A virus, spread via contaminated food or water.",
+    mr: "अस्वच्छ अन्न किंवा पाण्यामुळे होणारा यकृताचा संसर्ग."
+  },
+  upay: {
+    en: [
+      "Maintain hygiene.",
+      "Drink clean water.",
+      "Avoid street food.",
+      "Take rest.",
+      "Consult a doctor."
+    ],
+    mr: [
+      "स्वच्छता ठेवा.",
+      "शुद्ध पाणी प्या.",
+      "रस्त्यावरील अन्न टाळा.",
+      "विश्रांती घ्या.",
+      "डॉक्टरांचा सल्ला घ्या."
+    ]
+  }
+},
+
+hepatitis_b: {
+  name: { en: "Hepatitis B", mr: "हिपॅटायटिस बी" },
+  info: {
+    en: "Viral liver infection spread through blood or body fluids.",
+    mr: "रक्त किंवा शरीराबाह्य द्रवांद्वारे पसरणारा यकृत संसर्ग."
+  },
+  upay: {
+    en: [
+      "Avoid unsterile needles.",
+      "Practice safe sex.",
+      "Get vaccinated.",
+      "Follow medical treatment.",
+      "Monitor liver function."
+    ],
+    mr: [
+      "अस्वच्छ सुई वापरणे टाळा.",
+      "सुरक्षित लैंगिक संबंध ठेवा.",
+      "लसीकरण करून घ्या.",
+      "वैद्यकीय उपचार घ्या.",
+      "यकृत तपासणी नियमित करा."
+    ]
+  }
+},
+
+hepatitis_c: {
+  name: { en: "Hepatitis C", mr: "हिपॅटायटिस सी" },
+  info: {
+    en: "Chronic liver disease transmitted through blood contact.",
+    mr: "रक्ताच्या संपर्कातून होणारा गंभीर यकृताचा आजार."
+  },
+  upay: {
+    en: [
+      "Avoid shared needles.",
+      "Take prescribed medication.",
+      "Monitor liver health.",
+      "Regular medical follow-up.",
+      "Avoid alcohol."
+    ],
+    mr: [
+      "सुई शेअर करणे टाळा.",
+      "डॉक्टरांनी दिलेली औषधे घ्या.",
+      "यकृताची तपासणी करा.",
+      "नियमित वैद्यकीय तपासणी करा.",
+      "दारू टाळा."
+    ]
+  }
+},
+
+covid19: {
+  name: { en: "COVID-19", mr: "कोविड-१९" },
+  info: {
+    en: "Viral respiratory infection caused by SARS-CoV-2.",
+    mr: "SARS-CoV-2 विषाणूमुळे होणारा श्वसन रोग."
+  },
+  upay: {
+    en: [
+      "Wear mask.",
+      "Maintain social distancing.",
+      "Get vaccinated.",
+      "Isolate if infected.",
+      "Seek medical help if severe."
+    ],
+    mr: [
+      "मास्क घाला.",
+      "सामाजिक अंतर ठेवा.",
+      "लस घ्या.",
+      "संसर्ग झाल्यास विलगीकरण करा.",
+      "लक्षणे गंभीर असल्यास डॉक्टरांचा सल्ला घ्या."
+    ]
+  }
+},
+
+influenza: {
+  name: { en: "Influenza (Flu)", mr: "फ्लू" },
+  info: {
+    en: "Common viral infection causing fever, cough, body ache.",
+    mr: "सर्दी, ताप, खोकला यांसारखी सामान्य लक्षणे असणारा विषाणूजन्य आजार."
+  },
+  upay: {
+    en: [
+      "Take rest.",
+      "Drink fluids.",
+      "Use antipyretics.",
+      "Avoid contact with others.",
+      "Consult a doctor if needed."
+    ],
+    mr: [
+      "विश्रांती घ्या.",
+      "द्रवपदार्थ भरपूर घ्या.",
+      "ताप कमी करणारी औषधे घ्या.",
+      "इतरांपासून दूर रहा.",
+      "आवश्यक असल्यास डॉक्टरांचा सल्ला घ्या."
+    ]
+  }
+},
+
+common_cold: {
+  name: { en: "Common Cold", mr: "सर्दी" },
+  info: {
+    en: "Mild viral infection with sneezing, cough, and sore throat.",
+    mr: "शिंका, खोकला आणि घशाचा त्रास देणारा सौम्य विषाणूजन्य आजार."
+  },
+  upay: {
+    en: [
+      "Drink warm fluids.",
+      "Use steam inhalation.",
+      "Rest properly.",
+      "Take over-the-counter meds.",
+      "Avoid cold weather."
+    ],
+    mr: [
+      "उबदार द्रव घ्या.",
+      "वाफ घ्या.",
+      "योग्य विश्रांती घ्या.",
+      "औषधे वापरा.",
+      "थंडीपासून बचाव करा."
+    ]
+  }
+},
+
+tonsillitis: {
+  name: { en: "Tonsillitis", mr: "टॉन्सिल्स" },
+  info: {
+    en: "Inflammation of tonsils causing sore throat and difficulty swallowing.",
+    mr: "टॉन्सिल्सची सूज, ज्यामुळे घसा दुखतो आणि गिळताना त्रास होतो."
+  },
+  upay: {
+    en: [
+      "Gargle with warm salt water.",
+      "Avoid cold food.",
+      "Take antibiotics if prescribed.",
+      "Rest well.",
+      "Consult ENT specialist."
+    ],
+    mr: [
+      "साल्ट वॉटर गार्गल करा.",
+      "थंड अन्न टाळा.",
+      "डॉक्टरांनी दिली तर अँटीबायोटिक्स घ्या.",
+      "योग्य विश्रांती घ्या.",
+      "ईएनटी तज्ज्ञांचा सल्ला घ्या."
+    ]
+  }
+},
+
+uti: {
+  name: { en: "Urinary Tract Infection (UTI)", mr: "मूत्रमार्ग संक्रमण" },
+  info: {
+    en: "Infection in urinary tract causing pain during urination.",
+    mr: "मूत्रमार्गात संसर्ग होऊन लघवी करताना दुखणे."
+  },
+  upay: {
+    en: [
+      "Drink plenty of water.",
+      "Take antibiotics as prescribed.",
+      "Maintain hygiene.",
+      "Avoid holding urine.",
+      "Visit doctor if severe."
+    ],
+    mr: [
+      "भरपूर पाणी प्या.",
+      "डॉक्टरांनी दिलेली अँटीबायोटिक घ्या.",
+      "स्वच्छता ठेवा.",
+      "लघवी थांबवू नका.",
+      "लक्षणे वाढल्यास डॉक्टरांकडे जा."
+    ]
+  }
+},
+
+kidney_stones: {
+  name: { en: "Kidney Stones", mr: "मूत्राशयातील खडे" },
+  info: {
+    en: "Hard mineral deposits in kidney causing severe pain.",
+    mr: "किडनीमध्ये खडे तयार होऊन तीव्र वेदना होतात."
+  },
+  upay: {
+    en: [
+      "Drink lots of water.",
+      "Use painkillers as prescribed.",
+      "Ultrasound or CT for diagnosis.",
+      "Surgical removal if needed.",
+      "Avoid high oxalate foods."
+    ],
+    mr: [
+      "पाणी भरपूर प्या.",
+      "वेदनाशामक औषधे घ्या.",
+      "अल्ट्रासाउंड/CT स्कॅन करून घ्या.",
+      "गरज असल्यास शस्त्रक्रिया करा.",
+      "ऑक्सलेटयुक्त अन्न टाळा."
+    ]
+  }
+},
+
+gallstones: {
+  name: { en: "Gallstones", mr: "पित्ताशयातील खडे" },
+  info: {
+    en: "Stones formed in gallbladder causing pain and indigestion.",
+    mr: "पित्ताशयात खडे तयार होऊन पोटदुखी व अपचन होते."
+  },
+  upay: {
+    en: [
+      "Eat low-fat diet.",
+      "Take prescribed medicine.",
+      "Ultrasound to confirm.",
+      "Surgery if severe.",
+      "Avoid fried food."
+    ],
+    mr: [
+      "कमी फॅट असलेले अन्न खा.",
+      "डॉक्टरांनी दिलेली औषधे घ्या.",
+      "अल्ट्रासाउंड तपासणी करा.",
+      "अवश्यक असल्यास शस्त्रक्रिया करा.",
+      "तळलेले अन्न टाळा."
+    ]
+  }
+},
+  liverCirrhosis: {
+    name: { en: "Liver Cirrhosis", mr: "यकृत सिरोसिस" },
+    info: {
+      en: "A chronic liver disease where healthy tissue is replaced by scar tissue, affecting liver function.",
+      mr: "एक दीर्घकालीन यकृताचा आजार ज्यामध्ये आरोग्यदायी ऊतकाऐवजी जखमी ऊतक तयार होते, ज्यामुळे यकृताची कार्यक्षमता कमी होते."
+    },
+    upay: {
+      en: [
+        "Avoid alcohol and harmful substances.",
+        "Eat a balanced and nutritious diet.",
+        "Follow doctor's advice regularly.",
+        "Take prescribed medications on time.",
+        "Monitor liver function tests."
+      ],
+      mr: [
+        "दारू व हानिकारक पदार्थ टाळा.",
+        "संतुलित आणि पौष्टिक आहार घ्या.",
+        "डॉक्टरांचा सल्ला नियमित पाळा.",
+        "औषधे वेळेवर घ्या.",
+        "यकृत कार्य तपासणी नियमित करा."
+      ]
+    }
+  },
+
+  fattyLiver: {
+    name: { en: "Fatty Liver", mr: "चरबीयुक्त यकृत" },
+    info: {
+      en: "A condition where fat builds up in the liver cells, which may cause inflammation and damage.",
+      mr: "असे आजार ज्यामध्ये यकृतातील पेशींमध्ये चरबी जमा होते, ज्यामुळे सूज व नुकसान होऊ शकते."
+    },
+    upay: {
+      en: [
+        "Maintain healthy weight.",
+        "Exercise regularly.",
+        "Avoid alcohol.",
+        "Eat a low-fat diet.",
+        "Consult your doctor for medications."
+      ],
+      mr: [
+        "तंदुरुस्त वजन ठेवा.",
+        "नियमित व्यायाम करा.",
+        "दारू टाळा.",
+        "कमी फॅट असलेला आहार घ्या.",
+        "डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  piles: {
+    name: { en: "Piles (Hemorrhoids)", mr: "मुळव्याध" },
+    info: {
+      en: "Swollen veins in the lower rectum and anus causing pain, itching, and bleeding.",
+      mr: "खालच्या मलाशय व गुदद्वारातील फुगलेल्या रक्तवाहिन्या, ज्यामुळे वेदना, खाज आणि रक्तस्त्राव होतो."
+    },
+    upay: {
+      en: [
+        "Eat high-fiber foods.",
+        "Drink plenty of water.",
+        "Avoid straining during bowel movements.",
+        "Use warm sitz baths.",
+        "Consult a doctor for severe cases."
+      ],
+      mr: [
+        "उच्च फायबरयुक्त अन्न खा.",
+        "पुरेसे पाणी प्या.",
+        "मल काढताना जोर टाळा.",
+        "गरम आंघोळी घ्या.",
+        "गंभीर प्रसंगी डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  fissure: {
+    name: { en: "Fissure", mr: "फिशर" },
+    info: {
+      en: "A small tear in the lining of the anus causing pain and bleeding during bowel movements.",
+      mr: "गुदद्वाराच्या आतील भागातील लहान फोड ज्यामुळे वेदना आणि रक्तस्त्राव होतो."
+    },
+    upay: {
+      en: [
+        "Maintain good hygiene.",
+        "Eat high-fiber diet.",
+        "Use stool softeners if needed.",
+        "Apply prescribed ointments.",
+        "Consult doctor if persistent."
+      ],
+      mr: [
+        "चांगली स्वच्छता ठेवा.",
+        "उच्च फायबरयुक्त आहार घ्या.",
+        "गरज असल्यास मल मऊ करणारे वापरा.",
+        "डॉक्टरांनी दिलेली मलम वापरा.",
+        "दीर्घकालीन त्रास असल्यास डॉक्टरांना भेटा."
+      ]
+    }
+  },
+
+  fistula: {
+    name: { en: "Fistula", mr: "भगंदर" },
+    info: {
+      en: "An abnormal connection between the anus and skin causing discharge and discomfort.",
+      mr: "गुदद्वार आणि त्वचेच्या दरम्यान असामान्य जोड, ज्यामुळे स्राव व अस्वस्थता होते."
+    },
+    upay: {
+      en: [
+        "Maintain hygiene to prevent infection.",
+        "Take prescribed antibiotics if any.",
+        "Surgical treatment may be needed.",
+        "Follow post-surgery care instructions.",
+        "Consult a specialist doctor."
+      ],
+      mr: [
+        "संसर्ग टाळण्यासाठी स्वच्छता ठेवा.",
+        "औषधे डॉक्टरांच्या सल्ल्यानुसार घ्या.",
+        "शस्त्रक्रियेची आवश्यकता असू शकते.",
+        "शस्त्रक्रिया नंतरची काळजी घ्या.",
+        "विशेषज्ञ डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  heartAttack: {
+    name: { en: "Heart Attack", mr: "हृदयविकाराचा झटका" },
+    info: {
+      en: "A sudden blockage of blood flow to the heart muscle causing chest pain and other symptoms.",
+      mr: "हृदयातील रक्तवाहिन्यांमध्ये अचानक अडथळा येणे ज्यामुळे छातीत वेदना व इतर लक्षणे होतात."
+    },
+    upay: {
+      en: [
+        "Call emergency services immediately.",
+        "Take prescribed medications.",
+        "Maintain a heart-healthy diet.",
+        "Exercise regularly as advised.",
+        "Avoid smoking and alcohol."
+      ],
+      mr: [
+        "तुरंत आपत्कालीन सेवा बोलवा.",
+        "औषधे डॉक्टरांच्या सल्ल्यानुसार घ्या.",
+        "हृदयासाठी आरोग्यदायी आहार घ्या.",
+        "डॉक्टरांच्या सल्ल्यानुसार व्यायाम करा.",
+        "धूम्रपान आणि दारू टाळा."
+      ]
+    }
+  },
+
+  stroke: {
+    name: { en: "Stroke", mr: "मेंदूचा झटका" },
+    info: {
+      en: "A sudden interruption of blood supply to the brain causing paralysis or speech difficulty.",
+      mr: "मेंदूला रक्तपुरवठा अचानक थांबणे ज्यामुळे लकवा किंवा बोलण्यास त्रास होतो."
+    },
+    upay: {
+      en: [
+        "Seek emergency medical help immediately.",
+        "Take prescribed medicines.",
+        "Control blood pressure and diabetes.",
+        "Rehabilitative therapies post-stroke.",
+        "Maintain a healthy lifestyle."
+      ],
+      mr: [
+        "तुरंत आपत्कालीन वैद्यकीय मदत घ्या.",
+        "डॉक्टरांच्या सल्ल्यानुसार औषधे घ्या.",
+        "रक्तदाब व मधुमेह नियंत्रणात ठेवा.",
+        "झटक्यानंतर पुनर्वसन करा.",
+        "तंदुरुस्त जीवनशैली ठेवा."
+      ]
+    }
+  },
+
+  cancer: {
+    name: { en: "Cancer", mr: "कर्करोग" },
+    info: {
+      en: "Uncontrolled growth of abnormal cells in the body which may spread to other parts.",
+      mr: "शरीरातील असामान्य पेशींचा अनियंत्रित वाढ जो इतर भागांमध्ये पसरू शकतो."
+    },
+    upay: {
+      en: [
+        "Early detection is important.",
+        "Follow treatment plans like chemotherapy or surgery.",
+        "Maintain healthy nutrition.",
+        "Avoid tobacco and alcohol.",
+        "Regular follow-up with doctor."
+      ],
+      mr: [
+        "लवकर ओळखणे महत्त्वाचे आहे.",
+        "रसायनशास्त्र किंवा शस्त्रक्रिया यांसारखे उपचार करा.",
+        "संतुलित आहार घ्या.",
+        "तंबाखू आणि दारू टाळा.",
+        "डॉक्टरांचा नियमित सल्ला घ्या."
+      ]
+    }
+  },
+
+  leukemia: {
+    name: { en: "Leukemia", mr: "रक्ताचा कर्करोग" },
+    info: {
+      en: "Cancer of blood-forming tissues causing abnormal white blood cells.",
+      mr: "रक्तनिर्मिती करणाऱ्या ऊतकांचा कर्करोग ज्यामुळे असामान्य पांढऱ्या रक्तकोशिका तयार होतात."
+    },
+    upay: {
+      en: [
+        "Follow chemotherapy treatment.",
+        "Maintain good nutrition.",
+        "Avoid infections.",
+        "Regular blood tests.",
+        "Consult hematologist regularly."
+      ],
+      mr: [
+        "रसायनशास्त्र उपचार घ्या.",
+        "पौष्टिक आहार घ्या.",
+        "संसर्ग टाळा.",
+        "नियमित रक्त तपासणी करा.",
+        "रक्तरोग तज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  breastCancer: {
+    name: { en: "Breast Cancer", mr: "स्तनाचा कर्करोग" },
+    info: {
+      en: "Cancer that forms in breast tissues, often detected by lumps or changes in breast shape.",
+      mr: "स्तनातील ऊतकांमध्ये होणारा कर्करोग, जो गांठ किंवा आकार बदलून दिसतो."
+    },
+    upay: {
+      en: [
+        "Regular self-examination.",
+        "Follow medical treatment plans.",
+        "Maintain healthy lifestyle.",
+        "Avoid tobacco and alcohol.",
+        "Attend regular doctor check-ups."
+      ],
+      mr: [
+        "नियमित स्वतःची तपासणी करा.",
+        "वैद्यकीय उपचार घ्या.",
+        "तंदुरुस्त जीवनशैली ठेवा.",
+        "तंबाखू आणि दारू टाळा.",
+        "डॉक्टरांकडे नियमित तपासणी करा."
+      ]
+    }
+  },
+
+  cervicalCancer: {
+    name: { en: "Cervical Cancer", mr: "गर्भाशयाच्या मुखाचा कर्करोग" },
+    info: {
+      en: "Cancer of the cervix, often caused by HPV infection, leading to abnormal bleeding.",
+      mr: "गर्भाशयाच्या मुखाचा कर्करोग, सामान्यतः HPV संसर्गामुळे होतो, ज्यामुळे असामान्य रक्तस्त्राव होतो."
+    },
+    upay: {
+      en: [
+        "Get HPV vaccination.",
+        "Regular Pap smear tests.",
+        "Follow doctor's treatment plans.",
+        "Maintain good hygiene.",
+        "Avoid smoking."
+      ],
+      mr: [
+        "HPV लस घ्या.",
+        "नियमित पॅप स्मिअर तपासणी करा.",
+        "डॉक्टरांच्या सल्ल्यानुसार उपचार घ्या.",
+        "चांगली स्वच्छता ठेवा.",
+        "धूम्रपान टाळा."
+      ]
+    }
+  },
+
+  skinAllergy: {
+    name: { en: "Skin Allergy", mr: "त्वचारोग" },
+    info: {
+      en: "Skin reaction caused by allergens, resulting in itching, redness or rash.",
+      mr: "अॅलर्जनमुळे त्वचेवर होणारी प्रतिक्रिया ज्यामुळे खाज, लालसरपणा किंवा पुरळ होते."
+    },
+    upay: {
+      en: [
+        "Avoid known allergens.",
+        "Use prescribed antihistamines or creams.",
+        "Keep skin clean and moisturized.",
+        "Avoid scratching the affected area.",
+        "Consult dermatologist if severe."
+      ],
+      mr: [
+        "ओळखलेले अॅलर्जन टाळा.",
+        "डॉक्टरांनी दिलेली औषधे वापरा.",
+        "त्वचा स्वच्छ आणि आर्द्र ठेवा.",
+        "खाजू नका.",
+        "गंभीर असल्यास त्वचारोगतज्ज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  psoriasis: {
+    name: { en: "Psoriasis", mr: "सोरायसिस" },
+    info: {
+      en: "A chronic autoimmune skin disease causing red, scaly patches.",
+      mr: "दीर्घकालीन स्वप्रतिरक्षित त्वचारोग ज्यामुळे लालसर, खोडदार ठिपके तयार होतात."
+    },
+    upay: {
+      en: [
+        "Use prescribed topical treatments.",
+        "Avoid triggers like stress and infections.",
+        "Maintain skin moisture.",
+        "Follow doctor's advice.",
+        "Regular medical check-ups."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेले मलम वापरा.",
+        "ताण व संसर्ग टाळा.",
+        "त्वचा आर्द्र ठेवा.",
+        "डॉक्टरांचा सल्ला पाळा.",
+        "नियमित तपासणी करा."
+      ]
+    }
+  },
+
+  eczema: {
+    name: { en: "Eczema", mr: "खरुज" },
+    info: {
+      en: "Inflammatory skin condition causing redness, itching and dryness.",
+      mr: "त्वचेचा सूज येणारा आजार ज्यामुळे लालसरपणा, खाज व कोरडेपणा होतो."
+    },
+    upay: {
+      en: [
+        "Keep skin moisturized.",
+        "Avoid harsh soaps and chemicals.",
+        "Use prescribed creams or ointments.",
+        "Avoid scratching.",
+        "Consult dermatologist if needed."
+      ],
+      mr: [
+        "त्वचा आर्द्र ठेवा.",
+        "कठीण साबण व रसायने टाळा.",
+        "डॉक्टरांनी दिलेले मलम वापरा.",
+        "खाजू नका.",
+        "गरज असल्यास त्वचारोगतज्ज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+   ringworm: {
+    name: { en: "Ringworm", mr: "दाद" },
+    info: {
+      en: "A fungal infection of the skin causing ring-shaped, itchy, red patches.",
+      mr: "त्वचेचा बुरशीजन्य संसर्ग ज्यामुळे वर्तुळाकार, खाज सुटणारे लालसर ठिपके तयार होतात."
+    },
+    upay: {
+      en: [
+        "Use antifungal creams as prescribed.",
+        "Keep the affected area clean and dry.",
+        "Avoid sharing personal items.",
+        "Wear loose cotton clothes.",
+        "Consult a doctor if it worsens."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेले बुरशीवरचे मलम वापरा.",
+        "प्रभावित भाग स्वच्छ आणि कोरडा ठेवा.",
+        "वैयक्तिक वस्तू शेअर करू नका.",
+        "सैल आणि सूती कपडे वापरा.",
+        "अधिक त्रास झाल्यास डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  scabies: {
+    name: { en: "Scabies", mr: "खाज" },
+    info: {
+      en: "A contagious skin condition caused by mites leading to intense itching and rash.",
+      mr: "खाजूमुळे होणारा संसर्ग जो त्वचेमध्ये खाज आणि पुरळ निर्माण करतो."
+    },
+    upay: {
+      en: [
+        "Use prescribed scabicide lotions or creams.",
+        "Wash clothes and bedding thoroughly.",
+        "Avoid close contact until treated.",
+        "Maintain personal hygiene.",
+        "Consult doctor for severe cases."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेले खाजेमध्ये वापरायचे मलम वापरा.",
+        "कपडे आणि झोपायची जागा स्वच्छ धुवा.",
+        "उपचार होईपर्यंत जवळचा संपर्क टाळा.",
+        "स्वच्छता पाळा.",
+        "गंभीर असलेल्या प्रकरणात डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  acne: {
+    name: { en: "Acne", mr: "मुरुम" },
+    info: {
+      en: "A skin condition causing pimples, blackheads, and whiteheads due to clogged hair follicles.",
+      mr: "त्वचेतील रोम छिद्रांमध्ये तेल आणि मृत पेशी जमा होऊन मुरुम, काळे डाग व पांढरे डाग तयार होणे."
+    },
+    upay: {
+      en: [
+        "Cleanse skin gently twice a day.",
+        "Avoid oily cosmetics.",
+        "Use non-comedogenic products.",
+        "Consult dermatologist if severe.",
+        "Maintain healthy diet and hydration."
+      ],
+      mr: [
+        "दुपारी आणि रात्री त्वचा सौम्यपणे धुवा.",
+        "तेलकट सौंदर्यप्रसाधने टाळा.",
+        "नॉन-कॉमेडोजेनिक उत्पादनांचा वापर करा.",
+        "गंभीर असल्यास त्वचारोगतज्ञांचा सल्ला घ्या.",
+        "आरोग्यदायी आहार आणि पाण्याचे सेवन करा."
+      ]
+    }
+  },
+
+  hairLoss: {
+    name: { en: "Hair Loss (Alopecia)", mr: "केस गळणे" },
+    info: {
+      en: "Excessive loss of hair from the scalp or body, can be due to genetics, stress or illness.",
+      mr: "डोक्याच्या त्वचेवर किंवा शरीरावर केसांची जास्त प्रमाणात गळती, जी अनुवंशिक, ताण किंवा आजारामुळे होते."
+    },
+    upay: {
+      en: [
+        "Eat protein-rich diet.",
+        "Avoid harsh hair treatments.",
+        "Manage stress effectively.",
+        "Consult dermatologist for treatment.",
+        "Use prescribed topical medications."
+      ],
+      mr: [
+        "प्रथिनेयुक्त आहार घ्या.",
+        "कठीण केश उपचार टाळा.",
+        "ताण कमी करा.",
+        "उपचारासाठी त्वचारोगतज्ञांचा सल्ला घ्या.",
+        "डॉक्टरांनी दिलेली मलम वापरा."
+      ]
+    }
+  },
+
+  obesity: {
+    name: { en: "Obesity", mr: "लठ्ठपणा" },
+    info: {
+      en: "Excessive body fat accumulation that presents health risks like diabetes and heart disease.",
+      mr: "शरीरात चरबीचे प्रमाण जास्त प्रमाणात वाढणे, ज्यामुळे मधुमेह व हृदयविकारासारखे धोके वाढतात."
+    },
+    upay: {
+      en: [
+        "Follow a balanced low-calorie diet.",
+        "Exercise regularly.",
+        "Avoid junk food and sugary drinks.",
+        "Monitor weight regularly.",
+        "Consult doctor or nutritionist."
+      ],
+      mr: [
+        "संतुलित कमी कॅलोरीचे आहार घ्या.",
+        "नियमित व्यायाम करा.",
+        "जंक फूड आणि साखरयुक्त पेये टाळा.",
+        "वजन नियमित तपासा.",
+        "डॉक्टर किंवा पोषणतज्ज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  thyroidDisorder: {
+    name: { en: "Thyroid Disorder", mr: "थायरॉईड समस्या" },
+    info: {
+      en: "Disorders affecting the thyroid gland, causing hormonal imbalance and various symptoms.",
+      mr: "थायरॉईड ग्रंथीशी संबंधित आजार ज्यामुळे हार्मोनचे असंतुलन व विविध लक्षणे होतात."
+    },
+    upay: {
+      en: [
+        "Regular thyroid function tests.",
+        "Take prescribed medications.",
+        "Maintain a healthy diet.",
+        "Avoid excess iodine intake.",
+        "Consult endocrinologist."
+      ],
+      mr: [
+        "नियमित थायरॉईड तपासण्या करा.",
+        "डॉक्टरांनी दिलेली औषधे घ्या.",
+        "तंदुरुस्त आहार घ्या.",
+        "अधिक आयोडीनचे सेवन टाळा.",
+        "अंतःस्रावी तज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  hypothyroidism: {
+    name: { en: "Hypothyroidism", mr: "थायरॉईड कमी होणे" },
+    info: {
+      en: "A condition where the thyroid gland produces insufficient hormones causing fatigue and weight gain.",
+      mr: "थायरॉईड ग्रंथी कमी प्रमाणात हार्मोन तयार करते, ज्यामुळे थकवा आणि वजन वाढ होते."
+    },
+    upay: {
+      en: [
+        "Take thyroid hormone replacement therapy.",
+        "Regular blood tests.",
+        "Maintain balanced diet and exercise.",
+        "Avoid goitrogenic foods in excess.",
+        "Consult doctor regularly."
+      ],
+      mr: [
+        "हार्मोन रिप्लेसमेंट थेरपी घ्या.",
+        "नियमित रक्त तपासणी करा.",
+        "संतुलित आहार आणि व्यायाम ठेवा.",
+        "अधिक प्रमाणात गोइट्रोजेनिक अन्न टाळा.",
+        "डॉक्टरांचा नियमित सल्ला घ्या."
+      ]
+    }
+  },
+
+  hyperthyroidism: {
+    name: { en: "Hyperthyroidism", mr: "थायरॉईड जास्त होणे" },
+    info: {
+      en: "Condition where thyroid gland produces excess hormones causing weight loss, anxiety and palpitations.",
+      mr: "थायरॉईड ग्रंथी जास्त हार्मोन तयार करते, ज्यामुळे वजन कमी होणे, तणाव व हृदय ठोका वाढतात."
+    },
+    upay: {
+      en: [
+        "Use prescribed antithyroid medications.",
+        "Regular monitoring of thyroid levels.",
+        "Avoid excessive iodine intake.",
+        "Follow doctor's advice on diet and lifestyle.",
+        "Consult endocrinologist regularly."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेली औषधे घ्या.",
+        "थायरॉईड स्तर नियमित तपासा.",
+        "अधिक आयोडीनचे सेवन टाळा.",
+        "आहार व जीवनशैलीचे पालन करा.",
+        "अंतःस्रावी तज्ञांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  polio: {
+    name: { en: "Polio", mr: "पोलिओ" },
+    info: {
+      en: "A viral disease that can cause paralysis by affecting the nervous system.",
+      mr: "संसर्गजन्य विषाणूजन्य आजार जो मज्जातंतूंना प्रभावित करून लकवा करू शकतो."
+    },
+    upay: {
+      en: [
+        "Get polio vaccination.",
+        "Maintain hygiene.",
+        "Seek immediate medical help if symptoms appear.",
+        "Supportive therapy and rehabilitation.",
+        "Prevent spread by sanitation."
+      ],
+      mr: [
+        "पोलिओची लस घ्या.",
+        "स्वच्छता पाळा.",
+        "लक्षणे आल्यास त्वरित वैद्यकीय मदत घ्या.",
+        "समर्थनात्मक उपचार आणि पुनर्वसन करा.",
+        "स्वच्छतेने रोगाचा प्रसार टाळा."
+      ]
+    }
+  },
+
+  rabies: {
+    name: { en: "Rabies", mr: "रेबीज" },
+    info: {
+      en: "A deadly viral disease transmitted through animal bites affecting the nervous system.",
+      mr: "प्राण्यांच्या चाव्यामुळे होणारा जीवघेणा विषाणूजन्य आजार जो मज्जासंस्थेला प्रभावित करतो."
+    },
+    upay: {
+      en: [
+        "Clean wound immediately with soap and water.",
+        "Get rabies vaccination promptly.",
+        "Seek urgent medical attention.",
+        "Avoid contact with stray animals.",
+        "Follow post-exposure prophylaxis."
+      ],
+      mr: [
+        "जखम त्वरित साबण व पाण्याने धुवा.",
+        "रेबीजची लस लगेच घ्या.",
+        "तातडीने वैद्यकीय मदत घ्या.",
+        "भटकंती करणाऱ्या प्राण्यांपासून दूर रहा.",
+        "प्रोफिलॅक्सिसचे पालन करा."
+      ]
+    }
+  },
+
+  snakeBite: {
+    name: { en: "Snake Bite", mr: "सर्पदंश" },
+    info: {
+      en: "Injury caused by snake venom injection that can be life-threatening.",
+      mr: "सर्पदंशामुळे होणारी जखम जी जीवासाठी धोकादायक ठरू शकते."
+    },
+    upay: {
+      en: [
+        "Stay calm and immobilize the affected limb.",
+        "Seek immediate medical help.",
+        "Avoid tourniquets or cutting the wound.",
+        "Do not consume alcohol or caffeine.",
+        "Follow doctor's treatment strictly."
+      ],
+      mr: [
+        "शांत रहा आणि जखमी भाग स्थिर ठेवा.",
+        "त्वरित वैद्यकीय मदत घ्या.",
+        "टूर्निकेट किंवा जखमेवर कापणी करू नका.",
+        "दारू आणि कॅफिन घेऊ नका.",
+        "डॉक्टरांच्या सल्ल्यानुसार उपचार करा."
+      ]
+    }
+  },
+
+  dogBite: {
+    name: { en: "Dog Bite", mr: "कुत्रा चावा" },
+    info: {
+      en: "Injury caused by dog bite which can cause infection and rabies.",
+      mr: "कुत्र्याच्या चाव्यामुळे होणारी जखम, जी संसर्ग आणि रेबीज होऊ शकते."
+    },
+    upay: {
+      en: [
+        "Clean the wound thoroughly with soap and water.",
+        "Seek medical attention immediately.",
+        "Get tetanus and rabies vaccines if needed.",
+        "Avoid touching the wound with dirty hands.",
+        "Follow doctor's advice on wound care."
+      ],
+      mr: [
+        "जखम स्वच्छ साबण व पाण्याने नीट धुवा.",
+        "तत्काळ वैद्यकीय मदत घ्या.",
+        "आवश्यक असल्यास टेटनस व रेबीज लस घ्या.",
+        "जखमेवर घाणेरडे हात लावू नका.",
+        "डॉक्टरांच्या सल्ल्यानुसार जखमेची काळजी घ्या."
+      ]
+    }
+  },
+
+  swineFlu: {
+    name: { en: "Swine Flu", mr: "स्वाईन फ्लू" },
+    info: {
+      en: "A contagious respiratory disease caused by influenza virus affecting pigs and humans.",
+      mr: "इन्फ्लुएंझा विषाणूमुळे होणारा संसर्गजन्य श्वसनाचा आजार जो डुकरांनाही प्रभावित करतो."
+    },
+    upay: {
+      en: [
+        "Get seasonal flu vaccination.",
+        "Maintain good hygiene and hand washing.",
+        "Avoid close contact with sick people.",
+        "Rest and drink plenty of fluids.",
+        "Consult doctor if symptoms worsen."
+      ],
+      mr: [
+        "हंगामी फ्लू लस घ्या.",
+        "चांगली स्वच्छता आणि हात धुणे पाळा.",
+        "रुग्णांशी जवळचा संपर्क टाळा.",
+        "विश्रांती घ्या आणि पुरेसे पाणी प्या.",
+        "लक्षणे वाईट झाल्यास डॉक्टरांचा सल्ला घ्या."
+      ]
+    }
+  },
+
+  birdFlu: {
+    name: { en: "Bird Flu", mr: "बर्ड फ्लू" },
+    info: {
+      en: "An infectious type of influenza spread by birds, can infect humans too.",
+      mr: "पक्ष्यांद्वारे पसरणारा संसर्गजन्य इन्फ्लुएंझा, जो माणसांनाही संसर्ग करू शकतो."
+    },
+    upay: {
+      en: [
+        "Avoid contact with infected birds.",
+        "Maintain good hygiene.",
+        "Cook poultry products thoroughly.",
+        "Seek medical attention if symptomatic.",
+        "Follow public health advisories."
+      ],
+      mr: [
+        "संक्रमित पक्ष्यांपासून दूर रहा.",
+        "चांगली स्वच्छता ठेवा.",
+        "मांसाहारी पदार्थ नीट शिजवा.",
+        "लक्षणे दिसल्यास डॉक्टरांना भेटा.",
+        "सार्वजनिक आरोग्य सूचना पाळा."
+      ]
+    }
+  },
+
+  hivAids: {
+    name: { en: "HIV/AIDS", mr: "एचआयव्ही / एड्स" },
+    info: {
+      en: "A virus that attacks the immune system leading to acquired immunodeficiency syndrome.",
+      mr: "एक विषाणू जो रोगप्रतिकारक शक्तीवर हल्ला करतो आणि प्रतिकारशक्ती कमी होण्याचा आजार होतो."
+    },
+    upay: {
+      en: [
+        "Practice safe sex and use protection.",
+        "Get regular HIV testing.",
+        "Take antiretroviral therapy as prescribed.",
+        "Maintain healthy lifestyle and nutrition.",
+        "Consult healthcare providers regularly."
+      ],
+      mr: [
+        "सुरक्षित लैंगिक संबंध ठेवा आणि संरक्षण वापरा.",
+        "नियमित एचआयव्ही चाचणी करा.",
+        "औषधे डॉक्टरांच्या सल्ल्यानुसार घ्या.",
+        "तंदुरुस्त जीवनशैली आणि आहार ठेवा.",
+        "वैद्यकीय सल्ला नियमित घ्या."
+      ]
+    }
+  },
+
+  lupus: {
+    name: { en: "Lupus", mr: "ल्यूपस" },
+    info: {
+      en: "A chronic autoimmune disease causing inflammation and damage to various body parts.",
+      mr: "दीर्घकालीन स्वप्रतिरक्षित आजार ज्यामुळे शरीराच्या विविध भागांमध्ये सूज व नुकसान होते."
+    },
+    upay: {
+      en: [
+        "Take prescribed immunosuppressive medications.",
+        "Avoid sun exposure.",
+        "Manage stress effectively.",
+        "Follow doctor's instructions carefully.",
+        "Regular medical check-ups."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेली रोगप्रतिबंधक औषधे घ्या.",
+        "सूर्यप्रकाश टाळा.",
+        "ताण कमी करा.",
+        "डॉक्टरांचा सल्ला काटेकोरपणे पाळा.",
+        "नियमित तपासणी करा."
+      ]
+    }
+  },
+
+  autism: {
+    name: { en: "Autism", mr: "स्वमग्नता" },
+    info: {
+      en: "A developmental disorder affecting communication and behavior.",
+      mr: "विकासाचा आजार जो संवाद व वर्तनावर परिणाम करतो."
+    },
+    upay: {
+      en: [
+        "Early diagnosis and intervention.",
+        "Behavioral therapy and support.",
+        "Educational support and special schooling.",
+        "Family counseling.",
+        "Regular monitoring and therapy."
+      ],
+      mr: [
+        "लवकर निदान आणि हस्तक्षेप.",
+        "वर्तन थेरपी आणि मदत.",
+        "शैक्षणिक मदत व विशेष शाळा.",
+        "कुटुंब सल्ला.",
+        "नियमित देखरेख आणि थेरपी."
+      ]
+    }
+  },
+
+  adhd: {
+    name: { en: "ADHD", mr: "लक्ष विचलन विकार" },
+    info: {
+      en: "A neurodevelopmental disorder characterized by inattention, hyperactivity, and impulsivity.",
+      mr: "एक मेंदू विकासाचा आजार ज्यामध्ये लक्ष विचलित होणे, अतिसक्रियता आणि असंयमी वर्तन दिसते."
+    },
+    upay: {
+      en: [
+        "Behavioral therapy.",
+        "Medication as prescribed.",
+        "Structured routines and environment.",
+        "Parental education and support.",
+        "Regular monitoring by healthcare professionals."
+      ],
+      mr: [
+        "वर्तन थेरपी.",
+        "औषधे डॉक्टरांच्या सल्ल्यानुसार.",
+        "नियोजित दिनचर्या आणि वातावरण.",
+        "पालक शिक्षण आणि मदत.",
+        "वैद्यकीय देखरेख."
+      ]
+    }
+  },
+   speechDisorder: {
+    name: { en: "Speech Disorder", mr: "वाचा विकार" },
+    info: {
+      en: "Difficulty in speaking clearly, often due to neurological or developmental issues.",
+      mr: "स्वच्छ बोलण्यात अडचण, मुख्यतः मेंदू किंवा विकासाशी संबंधित कारणांमुळे होते."
+    },
+    upay: {
+      en: [
+        "Consult a speech therapist.",
+        "Practice speech exercises daily.",
+        "Avoid stress and anxiety.",
+        "Join support groups.",
+        "Use assistive communication tools."
+      ],
+      mr: [
+        "स्पीच थेरपिस्टचा सल्ला घ्या.",
+        "दररोज बोलण्याचे व्यायाम करा.",
+        "तणाव व चिंता टाळा.",
+        "समूह सहाय्य घ्या.",
+        "सहाय्यक संवाद साधने वापरा."
+      ]
+    }
+  },
+  constipation: {
+    name: { en: "Constipation", mr: "बद्धकोष्ठता" },
+    info: {
+      en: "Difficulty in passing stools, often due to poor diet or dehydration.",
+      mr: "विटंबण्याची अडचण, मुख्यतः चुकीच्या आहारामुळे किंवा निर्जलीकरणामुळे होते."
+    },
+    upay: {
+      en: [
+        "Drink plenty of water.",
+        "Eat fiber-rich foods.",
+        "Exercise regularly.",
+        "Avoid junk food.",
+        "Use laxatives only on doctor’s advice."
+      ],
+      mr: [
+        "भरपूर पाणी प्या.",
+        "तंतूमय अन्न खा.",
+        "नियमित व्यायाम करा.",
+        "जंक फूड टाळा.",
+        "डॉक्टरांच्या सल्ल्यानेच सौम्य जुलाब वापरा."
+      ]
+    }
+  },
+  diarrhea: {
+    name: { en: "Diarrhea", mr: "अतिसार" },
+    info: {
+      en: "Frequent loose or watery bowel movements due to infection or food intolerance.",
+      mr: "अतिसारामुळे वारंवार सैल किंवा पातळ जुलाब होतो, जो संसर्ग किंवा अन्न असहिष्णुतेमुळे होतो."
+    },
+    upay: {
+      en: [
+        "Stay hydrated with ORS.",
+        "Avoid dairy and spicy food.",
+        "Eat bland foods like rice and banana.",
+        "Consult doctor if persists.",
+        "Maintain hygiene."
+      ],
+      mr: [
+        "ORS ने हायड्रेटेड रहा.",
+        "दूध व तिखट अन्न टाळा.",
+        "भात व केळ्यासारखे सौम्य अन्न खा.",
+        "अतिसार थांबत नसेल तर डॉक्टरांचा सल्ला घ्या.",
+        "स्वच्छता राखा."
+      ]
+    }
+  },
+  vomiting: {
+    name: { en: "Vomiting", mr: "उलटी" },
+    info: {
+      en: "Forceful expulsion of stomach contents, often due to infection or food poisoning.",
+      mr: "संक्रमण किंवा अन्न विषबाधेमुळे होणारी पोटातील अन्नाची जबरदस्तीने उलटी."
+    },
+    upay: {
+      en: [
+        "Sip ORS or clear fluids.",
+        "Avoid solid food temporarily.",
+        "Take prescribed antiemetics.",
+        "Rest well.",
+        "Visit doctor if continues."
+      ],
+      mr: [
+        "ORS किंवा स्वच्छ द्रव प्या.",
+        "काही वेळ सॉलिड अन्न टाळा.",
+        "डॉक्टरांनी दिलेली उलटी थांबवणारी औषधे घ्या.",
+        "विश्रांती घ्या.",
+        "उलटी थांबत नसेल तर डॉक्टरांकडे जा."
+      ]
+    }
+  },
+  gastricUlcer: {
+    name: { en: "Gastric Ulcer", mr: "आम्लपित्त" },
+    info: {
+      en: "Sores in the stomach lining caused by excess acid or bacterial infection.",
+      mr: "पचनतंत्रातील आम्लवाढ किंवा जंतुसंसर्गामुळे उद्भवणारे आम्लपित्त."
+    },
+    upay: {
+      en: [
+        "Take antacids as prescribed.",
+        "Avoid spicy and acidic foods.",
+        "Do not skip meals.",
+        "Quit smoking and alcohol.",
+        "Get endoscopy if advised."
+      ],
+      mr: [
+        "डॉक्टरांनी दिलेली अँटॅसिड्स घ्या.",
+        "तिखट व आम्ल अन्न टाळा.",
+        "जेवण चुकवू नका.",
+        "धूम्रपान आणि मद्यपान टाळा.",
+        "शिफारस असल्यास एंडोस्कोपी करा."
+      ]
+    }
+  },
+ 
+
+
+};
+
+
+  function populateDropdown() {
+    const select = document.getElementById("diseaseSelect");
+    select.innerHTML = `<option value="">-- ${currentLang === 'mr' ? "रोग निवडा" : "Select Disease"} --</option>`;
+    for (const key in diseaseInfo) {
+      const option = document.createElement("option");
+      option.value = key.toLowerCase(); // Use the key directly
+      option.textContent = diseaseInfo[key].name[currentLang]; // get name from diseaseInfo
+      select.appendChild(option);
+    }
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    document.getElementById('title').innerText = (lang === 'mr') ? "रोग माहिती आणि उपाय" : "Disease Information and Remedies";
+    populateDropdown();
+    showDiseaseInfo();
+  }
+
+  function showDiseaseInfo() {
+    const key = document.getElementById("diseaseSelect").value.toLowerCase(); // lowercase match
+    const infoBox = document.getElementById("infoBox");
+
+    if (key && diseaseInfo[key]) {
+      const disease = diseaseInfo[key];
+      const name = disease.name[currentLang];
+      const info = disease.info[currentLang];
+      const upayList = disease.upay[currentLang].map(u => `<li>${u}</li>`).join('');
+
+      infoBox.innerHTML = `
+        <h3>${name}</h3>
+        <p>${info}</p>
+        <h4>${(currentLang === 'mr') ? 'उपाय:' : 'Remedies:'}</h4>
+        <ul class="upay">${upayList}</ul>
+      `;
+    } else {
+      infoBox.innerHTML = "";
+    }
+  }
+
+  // initial load
+  populateDropdown();
+</script>
+

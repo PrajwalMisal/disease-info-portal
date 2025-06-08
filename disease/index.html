@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Admin Login / Sign-Up</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: url('download.jpg') center center/cover no-repeat;
+      perspective: 1000px;
+    }
+
+    .admin-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card-container {
+      width: 350px;
+      height: 460px; /* थोडं जास्त उंची, role dropdown साठी */
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s;
+    }
+
+    .card-container.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .form-card {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      backface-visibility: hidden;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .form-card h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form-card input, .form-card select {
+      margin: 10px 0;
+      padding: 10px;
+      width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .form-card button {
+      padding: 10px 20px;
+      background: #007bff;
+      border: none;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .form-card button:hover {
+      background-color: #0056b3;
+    }
+
+    .form-card a {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #007bff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .back {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Button at top right -->
+  <button class="admin-button" onclick="openAdminPanel()">Admin Panel</button>
+
+  <div class="container">
+    <div class="card-container" id="card">
+      <!-- Login Form -->
+      <div class="form-card front">
+        <form id="loginForm">
+          <h2>Admin Login</h2>
+          <input type="email" id="loginEmail" placeholder="Email" required />
+          <input type="password" id="loginPassword" placeholder="Password" required />
+          <button type="submit">Login</button>
+          <a onclick="flipCard()">Don't have an account? Sign Up</a>
+        </form>
+      </div>
+
+      <!-- Sign-Up Form -->
+      <div class="form-card back">
+        <form id="signupForm">
+          <h2>Sign Up</h2>
+          <input type="text" id="signupUsername" placeholder="Username" required />
+          <input type="email" id="signupEmail" placeholder="Email" required />
+          <input type="password" id="signupPassword" placeholder="Password" required />
+          
+          <!-- Role Dropdown Added -->
+          <select id="signupRole" required>
+            <option value="" disabled selected>Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+
+          <button type="submit">Create Account</button>
+          <a onclick="flipCard()">Already have an account? Login</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const card = document.getElementById('card');
+    function flipCard() {
+      card.classList.toggle('flipped');
+    }
+
+    function openAdminPanel() {
+      const password = prompt("Enter Admin Password:");
+      if (password === "2002") {
+        window.location.href = "admin.html";
+      } else {
+        alert("Incorrect password. Access denied.");
+      }
+    }
+
+    // Firebase Config
+   const firebaseConfig = {
+  apiKey: "AIzaSyCMrRmTOL5ryxkXbFazXGxbAMf3ZPVZFyo",
+  authDomain: "disease-project-7b8f8.firebaseapp.com",
+  projectId: "disease-project-7b8f8",
+  storageBucket: "disease-project-7b8f8.firebasestorage.app",
+  messagingSenderId: "703757037079",
+  appId: "1:703757037079:web:f05c2ae9135a22240d3652",
+  measurementId: "G-RSDRW6QEK6"
+};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Login successful!");
+          window.location.href = "home.html"; // Redirect to home page
+        })
+        .catch((error) => {
+          alert("Login failed: " + error.message);
+        });
+    });
+document.getElementById('signupForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const username = document.getElementById('signupUsername').value;
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  const role = document.getElementById('signupRole').value;
+
+  if (!role) {
+    showMessage("Please select a role.", true);
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      const uid = userCredential.user.uid;
+      return db.collection("users").doc(uid).set({
+        username: username,
+        email: email,
+        role: role
+      });
+    })
+    .then(() => {
+      showMessage("Account created successfully! You can now login.", false);
+      setTimeout(() => flipCard(), 2000); // flip after 2 seconds
+    })
+    .catch((error) => {
+      if (error.code === 'auth/email-already-in-use') {
+        showMessage("This email is already registered. Please login or use a different email.", true);
+      } else {
+        showMessage("Sign-up failed: " + error.message, true);
+      }
+    });
+});
+
+  </script>
+</body>
+</html>

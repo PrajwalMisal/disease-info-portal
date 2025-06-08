@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disease & Hospital Info Portal for Maharashtra</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f0f8ff, #d6eaf8);
+    }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .lang-toggle button {
+  margin: 0 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(145deg, #4a90e2, #357ABD);
+  box-shadow: 0 5px 10px rgba(53, 122, 189, 0.6),
+              inset 0 -3px 5px rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  perspective: 800px;
+  transform-style: preserve-3d;
+}
+
+.lang-toggle button:hover {
+  background: linear-gradient(145deg, #d3e012, #bcf538);
+  box-shadow: 0 8px 15px rgba(95, 226, 8, 0.8),
+              inset 0 3px 8px rgba(255,255,255,0.4);
+  transform: translateZ(10px) scale(1.05) rotateX(5deg);
+}
+
+/* Colorful select and search button */
+.search-section select,
+.search-section button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #cadf0f54, #7fdf11);
+  color: rgb(87, 83, 83);
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgb(243, 240, 241);
+  transition: all 0.3s ease;
+  perspective: 700px;
+  transform-style: preserve-3d;
+}
+    .search-section {
+      margin: 40px auto;
+      text-align: center;
+    }
+    .search-section input, .search-section select, .search-section button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin: 5px;
+    }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: perspective(600px) rotateY(5deg);
+      transition: transform 0.4s ease;
+    }
+    .card:hover {
+      transform: perspective(600px) rotateY(0deg);
+    }
+    .map-iframe {
+      width: 100%;
+      height: 200px;
+      margin-top: 10px;
+      border: none;
+    }
+    .tablet-button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://www.google.com/jsapi"></script>
+</head>
+<body>
+  <button class="next-button" onclick="location.href='information.html'">Next Page</button>
+  <header>
+    <h1 id="title">Disease & Hospital Info Portal for Maharashtra</h1>
+    <div class="lang-toggle">
+      <button onclick="setLanguage('en')">English</button>
+      <button onclick="setLanguage('mr')">मराठी</button>
+    </div>
+  </header>
+
+
+  <section class="search-section">
+    <input type="text" id="diseaseInput" placeholder="Search Disease... / आजार शोधा..." list="diseaseSuggestions">
+    <datalist id="diseaseSuggestions"></datalist>
+    <select id="districtSelect" required></select>
+    <button onclick="searchDisease()">Search / शोधा</button>
+  </section>
+
+  <section class="results" id="hospitalResults"></section>
+
+  <section class="results" id="tabletResults"></section>
+   <footer style="text-align: center; font-size: 14px; color: #888; margin-top: 40px;">
+  <hr style="width: 60%; margin: 20px auto;">
+  <p>Designed and Developed by <strong>MR. PRAJWAL BABASAHEB MISAL</strong></p>
+</footer>
+
+  <script>
+    const translations = {
+      en: {
+        title: "Disease & Hospital Info Portal for Maharashtra",
+        searchPlaceholder: "Search Disease...",
+        searchButton: "Search"
+      },
+      mr: {
+        title: "महाराष्ट्रासाठी आजार व रुग्णालय माहिती पोर्टल",
+        searchPlaceholder: "आजार शोधा...",
+        searchButton: "शोधा"
+      }
+    };
+
+    const diseaseList = [
+  { en: "Asthma", mr: "दमा" },
+  { en: "Diabetes", mr: "मधुमेह" },
+  { en: "Hypertension", mr: "उच्च रक्तदाब" },
+  { en: "Tuberculosis", mr: "क्षयरोग" },
+  { en: "Pneumonia", mr: "न्यूमोनिया" },
+  { en: "Dengue", mr: "डेंग्यू" },
+  { en: "Malaria", mr: "मलेरिया" },
+  { en: "Typhoid", mr: "टायफॉईड" },
+  { en: "Jaundice", mr: "पिवळ्या कावळ्या" },
+  { en: "Anemia", mr: "अशक्तता" },
+  { en: "Migraine", mr: "अर्धशिशी" },
+  { en: "Arthritis", mr: "संधिवात" },
+  { en: "Epilepsy", mr: "फिट्स/अपस्मार" },
+  { en: "Depression", mr: "नैराश्य" },
+  { en: "Anxiety", mr: "चिंता" },
+  { en: "Chickenpox", mr: "कांजिण्या" },
+  { en: "Measles", mr: "गोवर" },
+  { en: "Mumps", mr: "गालगुंड" },
+  { en: "Hepatitis A", mr: "हिपॅटायटिस अ" },
+  { en: "Hepatitis B", mr: "हिपॅटायटिस बी" },
+  { en: "Hepatitis C", mr: "हिपॅटायटिस सी" },
+  { en: "COVID-19", mr: "कोविड-१९" },
+  { en: "Influenza (Flu)", mr: "फ्लू" },
+  { en: "Common Cold", mr: "सर्दी" },
+  { en: "Tonsillitis", mr: "टॉन्सिल्स" },
+  { en: "Urinary Tract Infection (UTI)", mr: "मूत्रमार्ग संक्रमण" },
+  { en: "Kidney Stones", mr: "मूत्राशयातील खडे" },
+  { en: "Gallstones", mr: "पित्ताशयातील खडे" },
+  { en: "Liver Cirrhosis", mr: "यकृत सिरोसिस" },
+  { en: "Fatty Liver", mr: "चरबीयुक्त यकृत" },
+  { en: "Piles (Hemorrhoids)", mr: "मुळव्याध" },
+  { en: "Fissure", mr: "फिशर" },
+  { en: "Fistula", mr: "भगंदर" },
+  { en: "Heart Attack", mr: "हृदयविकाराचा झटका" },
+  { en: "Stroke", mr: "मेंदूचा झटका" },
+  { en: "Paralysis", mr: "अर्धांगवायू" },
+  { en: "Cancer", mr: "कर्करोग" },
+  { en: "Leukemia", mr: "रक्ताचा कर्करोग" },
+  { en: "Breast Cancer", mr: "स्तनाचा कर्करोग" },
+  { en: "Cervical Cancer", mr: "गर्भाशयाच्या मुखाचा कर्करोग" },
+  { en: "Skin Allergy", mr: "त्वचारोग" },
+  { en: "Psoriasis", mr: "सोरायसिस" },
+  { en: "Eczema", mr: "खरुज" },
+  { en: "Ringworm", mr: "दाद" },
+  { en: "Scabies", mr: "खाज" },
+  { en: "Acne", mr: "मुरुम" },
+  { en: "Hair Loss (Alopecia)", mr: "केस गळणे" },
+  { en: "Obesity", mr: "लठ्ठपणा" },
+  { en: "Thyroid Disorder", mr: "थायरॉईड समस्या" },
+  { en: "Hypothyroidism", mr: "थायरॉईड कमी होणे" },
+  { en: "Hyperthyroidism", mr: "थायरॉईड जास्त होणे" },
+  { en: "Polio", mr: "पोलिओ" },
+  { en: "Rabies", mr: "रेबीज" },
+  { en: "Snake Bite", mr: "सर्पदंश" },
+  { en: "Dog Bite", mr: "कुत्रा चावा" },
+  { en: "Swine Flu", mr: "स्वाईन फ्लू" },
+  { en: "Bird Flu", mr: "बर्ड फ्लू" },
+  { en: "HIV/AIDS", mr: "एचआयव्ही / एड्स" },
+  { en: "Lupus", mr: "ल्यूपस" },
+  { en: "Autism", mr: "स्वमग्नता" },
+  { en: "ADHD", mr: "लक्ष विचलन विकार" },
+  { en: "Learning Disability", mr: "शिकण्याची अडचण" },
+  { en: "Speech Disorder", mr: "वाचा विकार" },
+  { en: "Constipation", mr: "बद्धकोष्ठता" },
+  { en: "Diarrhea", mr: "अतिसार" },
+  { en: "Vomiting", mr: "उलटी" },
+  { en: "Gastric Ulcer", mr: "आम्लपित्त" },
+  { en: "Acidity", mr: "अॅसिडिटी" },
+  { en: "Heartburn", mr: "छातीत जळजळ" },
+  { en: "Back Pain", mr: "पाठदुखी" },
+  { en: "Neck Pain", mr: "मानेचा त्रास" },
+  { en: "Joint Pain", mr: "सांधेदुखी" },
+  { en: "Leg Cramps", mr: "पायात गोळे येणे" },
+  { en: "Vertigo", mr: "भोवळ" },
+  { en: "Insomnia", mr: "झोप न येणे" },
+  { en: "Nightmares", mr: "वाईट स्वप्न" },
+  { en: "Snoring", mr: "घोरणे" },
+  { en: "Sleep Apnea", mr: "झोपेत श्वासोच्छ्वास थांबणे" },
+  { en: "Dehydration", mr: "निर्जलीकरण" },
+  { en: "Heat Stroke", mr: "उष्माघात" },
+  { en: "Sunburn", mr: "उन्हामुळे त्वचा जळणे" },
+  { en: "Boils", mr: "फोड" },
+  { en: "Abscess", mr: "फोड किंवा गाठ" },
+  { en: "Appendicitis", mr: "अपेंडिक्सचा त्रास" },
+  { en: "Hernia", mr: "गाठ / हर्निया" },
+  { en: "Varicose Veins", mr: "व्हेरिकोज व्हेन्स" },
+  { en: "Cataract", mr: "मोतीबिंदू" },
+  { en: "Glaucoma", mr: "काळा मोती" },
+  { en: "Conjunctivitis", mr: "डोळ्यांचा दाह (आंख आना)" },
+  { en: "Dry Eyes", mr: "डोळे कोरडे पडणे" },
+  { en: "Tooth Decay", mr: "दात पोखरणे" },
+  { en: "Gingivitis", mr: "हिरड्यांची सूज" },
+  { en: "Bad Breath", mr: "तोंडाचा वास" },
+  { en: "Tonsil Stones", mr: "टॉन्सिल मध्ये खडे" },
+  { en: "Sore Throat", mr: "घसा दुखणे" },
+  { en: "Hiccups", mr: "उचक्या" },
+  { en: "Nausea", mr: "मळमळ" },
+  { en: "Bloating", mr: "फुगलेपण" },
+  { en: "Flatulence", mr: "पोटात वायू" },
+  { en: "IBS (Irritable Bowel Syndrome)", mr: "चिडचिडीत आतड्याचा विकार" },
+  { en: "GERD (Acid Reflux)", mr: "आम्लपित्त परावर्तन" },
+  { en: "Cholera", mr: "कॉलरा" },
+  { en: "Leptospirosis", mr: "लेप्टोस्पायरोसिस" },
+  { en: "Tetanus", mr: "धनुर्वात" },
+  { en: "Meningitis", mr: "मेंदुज्वर" },
+  { en: "Brain Tumor", mr: "मेंदूचा गाठ" },
+  { en: "Memory Loss", mr: "विस्मरण" },
+  { en: "Amnesia", mr: "स्मृतिभ्रंश" },
+  { en: "Glomerulonephritis", mr: "मूत्रपिंडाचा दाह" },
+  { en: "Nephrotic Syndrome", mr: "मूत्रपिंड विकृती" },
+  { en: "Enlarged Prostate", mr: "प्रोस्टेट वाढणे" },
+  { en: "Erectile Dysfunction", mr: "नपुंसकता" },
+  { en: "Infertility", mr: "वंध्यत्व" },
+  { en: "Menstrual Cramps", mr: "पाळीच्या वेदना" },
+  { en: "PCOS (Polycystic Ovary)", mr: "पॉलिसिस्टिक ओव्हरी सिंड्रोम" },
+  { en: "Endometriosis", mr: "एंडोमेट्रियोसिस" },
+  { en: "Uterine Fibroids", mr: "गर्भाशयातील गाठ" },
+  { en: "Ovarian Cyst", mr: "अंडाशयात गाठ" },
+  { en: "Breast Lump", mr: "स्तनातील गाठ" },
+  { en: "Hormonal Imbalance", mr: "संप्रेरक असंतुलन" },
+  { en: "Heat Rash", mr: "घामोळी" },
+  { en: "Scalp Infection", mr: "डोक्याच्या त्वचेला इन्फेक्शन" },
+  { en: "Nail Fungus", mr: "नखांचे बुरशीजन्य संक्रमण" },
+  { en: "Oral Thrush", mr: "तोंडात बुरशी" },
+  { en: "Tongue Ulcers", mr: "जिभेवर फोड" },
+  { en: "Lip Cracks", mr: "ओठांवर फट" }
+];
+
+  const tabletsByDisease = {
+  asthma: [
+    { name: 'Salbutamol', use_en: 'Relieves asthma symptoms', use_mr: 'अस्थमा लक्षणे कमी करतो' },
+    { name: 'Budesonide', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' },
+    { name: 'Montelukast', use_en: 'Prevents asthma attacks', use_mr: 'अस्थमा हल्ला टाळतो' }
+  ],
+  diabetes: [
+    { name: 'Metformin', use_en: 'Controls blood sugar', use_mr: 'रक्तातील साखर नियंत्रण करतो' },
+    { name: 'Insulin', use_en: 'Regulates glucose', use_mr: 'ग्लुकोज नियंत्रित करतो' },
+    { name: 'Glipizide', use_en: 'Lowers blood sugar', use_mr: 'रक्तातील साखर कमी करतो' }
+  ],
+  hypertension: [
+    { name: 'Amlodipine', use_en: 'Lowers blood pressure', use_mr: 'रक्तदाब कमी करतो' },
+    { name: 'Losartan', use_en: 'Controls hypertension', use_mr: 'उच्च रक्तदाब नियंत्रण करतो' },
+    { name: 'Hydrochlorothiazide', use_en: 'Diuretic for hypertension', use_mr: 'रक्तदाबासाठी मूत्रवर्धक' }
+  ],
+  tuberculosis: [
+    { name: 'Isoniazid', use_en: 'Treats TB infection', use_mr: 'क्षयरोगाचा उपचार करतो' },
+    { name: 'Rifampicin', use_en: 'Kills TB bacteria', use_mr: 'क्षयरोग जीवाणू नष्ट करतो' },
+    { name: 'Ethambutol', use_en: 'Prevents TB growth', use_mr: 'क्षयरोग वाढ थांबवतो' }
+  ],
+  pneumonia: [
+    { name: 'Azithromycin', use_en: 'Antibiotic for pneumonia', use_mr: 'न्यूमोनियासाठी अँटीबायोटिक' },
+    { name: 'Levofloxacin', use_en: 'Fights lung infection', use_mr: 'फुफ्फुस संक्रमणासाठी' },
+    { name: 'Amoxicillin', use_en: 'Stops bacterial growth', use_mr: 'बॅक्टेरिया वाढ थांबवतो' }
+  ],
+  dengue: [
+    { name: 'Paracetamol', use_en: 'Reduces fever', use_mr: 'ताप कमी करतो' },
+    { name: 'ORS', use_en: 'Prevents dehydration', use_mr: 'निर्जलीकरण टाळतो' },
+    { name: 'Ibuprofen', use_en: 'Relieves pain', use_mr: 'वेदना कमी करतो' }
+  ],
+  malaria: [
+    { name: 'Chloroquine', use_en: 'Treats malaria', use_mr: 'मलेरिया उपचार' },
+    { name: 'Artemisinin', use_en: 'Kills malaria parasite', use_mr: 'मलेरिया परजीवी नष्ट करतो' },
+    { name: 'Primaquine', use_en: 'Prevents relapse', use_mr: 'पुन्हा होण्यापासून बचाव' }
+  ],
+  typhoid: [
+    { name: 'Ciprofloxacin', use_en: 'Antibiotic for typhoid', use_mr: 'टायफॉईडसाठी अँटीबायोटिक' },
+    { name: 'Azithromycin', use_en: 'Treats bacterial infection', use_mr: 'बॅक्टेरियल इन्फेक्शनचा उपचार' },
+    { name: 'Paracetamol', use_en: 'Fever relief', use_mr: 'ताप कमी करतो' }
+  ],
+  jaundice: [
+    { name: 'Liv-52', use_en: 'Supports liver function', use_mr: 'यकृत कार्य सुधारतो' },
+    { name: 'Ursodeoxycholic acid', use_en: 'Reduces liver inflammation', use_mr: 'यकृताची सूज कमी करतो' },
+    { name: 'Vitamin B complex', use_en: 'Boosts liver health', use_mr: 'यकृत स्वास्थ्य वाढवतो' }
+  ],
+  anemia: [
+    { name: 'Ferrous Sulfate', use_en: 'Iron supplement', use_mr: 'लोहाचा पूरक' },
+    { name: 'Folic Acid', use_en: 'Supports red blood cells', use_mr: 'लाल रक्तकणिकांसाठी' },
+    { name: 'Vitamin B12', use_en: 'Prevents anemia', use_mr: 'अशक्तता टाळतो' }
+  ],
+  migraine: [
+    { name: 'Sumatriptan', use_en: 'Relieves migraine pain', use_mr: 'माइग्रेन वेदना कमी करतो' },
+    { name: 'Paracetamol', use_en: 'Pain reliever', use_mr: 'वेदना निवारक' },
+    { name: 'Ibuprofen', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' }
+  ],
+  arthritis: [
+    { name: 'Methotrexate', use_en: 'Slows arthritis progression', use_mr: 'संधिवात प्रगती कमी करतो' },
+    { name: 'Ibuprofen', use_en: 'Pain and inflammation relief', use_mr: 'वेदना आणि सूज कमी करतो' },
+    { name: 'Naproxen', use_en: 'Reduces joint pain', use_mr: 'संघात वेदना कमी करतो' }
+  ],
+  epilepsy: [
+    { name: 'Phenytoin', use_en: 'Controls seizures', use_mr: 'अपस्मार नियंत्रित करतो' },
+    { name: 'Valproate', use_en: 'Prevents seizures', use_mr: 'अपस्मार टाळतो' },
+    { name: 'Carbamazepine', use_en: 'Reduces seizure frequency', use_mr: 'अपस्मार वारंवारता कमी करतो' }
+  ],
+  depression: [
+    { name: 'Fluoxetine', use_en: 'Improves mood', use_mr: 'मनोवृत्ती सुधारतो' },
+    { name: 'Sertraline', use_en: 'Treats depression', use_mr: 'नैराश्यासाठी' },
+    { name: 'Escitalopram', use_en: 'Reduces anxiety', use_mr: 'चिंता कमी करतो' }
+  ],
+  anxiety: [
+    { name: 'Diazepam', use_en: 'Relaxes muscles', use_mr: 'मांसपेशी शिथिल करतो' },
+    { name: 'Alprazolam', use_en: 'Reduces anxiety', use_mr: 'चिंता कमी करतो' },
+    { name: 'Buspirone', use_en: 'Calms nervousness', use_mr: 'तणाव कमी करतो' }
+  ],
+  chickenpox: [
+    { name: 'Acyclovir', use_en: 'Antiviral for chickenpox', use_mr: 'कांजिण्यासाठी अँटीव्हायरल' },
+    { name: 'Paracetamol', use_en: 'Reduces fever', use_mr: 'ताप कमी करतो' },
+    { name: 'Calamine lotion', use_en: 'Soothes itching', use_mr: 'खाज कमी करतो' }
+  ],
+  measles: [
+    { name: 'Vitamin A', use_en: 'Supports immune system', use_mr: 'प्रतिरक्षा वाढवतो' },
+    { name: 'Paracetamol', use_en: 'Fever relief', use_mr: 'ताप कमी करतो' },
+    { name: 'ORS', use_en: 'Prevents dehydration', use_mr: 'निर्जलीकरण टाळतो' }
+  ],
+  mumps: [
+    { name: 'Paracetamol', use_en: 'Pain and fever relief', use_mr: 'वेदना आणि ताप कमी करतो' },
+    { name: 'Cold compress', use_en: 'Reduces swelling', use_mr: 'सूज कमी करतो' },
+    { name: 'Hydration', use_en: 'Prevents dehydration', use_mr: 'निर्जलीकरण टाळतो' }
+  ],
+  hepatitis_a: [
+    { name: 'Rest', use_en: 'Supports recovery', use_mr: 'सावरण्यासाठी विश्रांती' },
+    { name: 'Hydration', use_en: 'Prevents dehydration', use_mr: 'निर्जलीकरण टाळतो' },
+    { name: 'Balanced diet', use_en: 'Supports liver', use_mr: 'यकृतासाठी आहार' }
+  ],
+  hepatitis_b: [
+    { name: 'Tenofovir', use_en: 'Antiviral for hepatitis B', use_mr: 'हिपॅटायटिस बीसाठी अँटीव्हायरल' },
+    { name: 'Entecavir', use_en: 'Controls virus', use_mr: 'व्हायरस नियंत्रण' },
+    { name: 'Peginterferon', use_en: 'Boosts immune response', use_mr: 'प्रतिरक्षा वाढवतो' }
+  ],
+  covid_19: [
+    { name: 'Remdesivir', use_en: 'Antiviral for COVID-19', use_mr: 'कोविड-१९साठी अँटीव्हायरल' },
+    { name: 'Dexamethasone', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' },
+    { name: 'Paracetamol', use_en: 'Fever reducer', use_mr: 'ताप कमी करतो' }
+  ],
+  influenza: [
+    { name: 'Oseltamivir', use_en: 'Treats flu', use_mr: 'फ्लूसाठी उपचार' },
+    { name: 'Paracetamol', use_en: 'Reduces fever', use_mr: 'ताप कमी करतो' },
+    { name: 'Ibuprofen', use_en: 'Pain reliever', use_mr: 'वेदना निवारक' }
+  ],
+  common_cold: [
+    { name: 'Antihistamines', use_en: 'Relieves sneezing', use_mr: 'शिंका कमी करतो' },
+    { name: 'Decongestants', use_en: 'Clears nasal passages', use_mr: 'नाक साफ करतो' },
+    { name: 'Paracetamol', use_en: 'Reduces fever', use_mr: 'ताप कमी करतो' }
+  ],
+  tonsillitis: [
+    { name: 'Amoxicillin', use_en: 'Antibiotic for tonsillitis', use_mr: 'टॉन्सिल्ससाठी अँटीबायोटिक' },
+    { name: 'Paracetamol', use_en: 'Pain reliever', use_mr: 'वेदना निवारक' },
+    { name: 'Warm saline gargle', use_en: 'Reduces throat pain', use_mr: 'घसा दुखणे कमी करतो' }
+  ],
+  uti: [
+    { name: 'Nitrofurantoin', use_en: 'Antibiotic for UTI', use_mr: 'मूत्रमार्ग संक्रमणासाठी अँटीबायोटिक' },
+    { name: 'Trimethoprim', use_en: 'Fights bacterial infection', use_mr: 'बॅक्टेरियल संक्रमण नष्ट करतो' },
+    { name: 'Hydration', use_en: 'Flushes urinary tract', use_mr: 'मूत्रमार्ग स्वच्छ करतो' }
+  ],
+  kidney_stones: [
+    { name: 'Pain relievers', use_en: 'Relieves stone pain', use_mr: 'खडे वेदना कमी करतो' },
+    { name: 'Alpha blockers', use_en: 'Eases stone passage', use_mr: 'खडे जाणे सोपे करतो' },
+    { name: 'Hydration', use_en: 'Helps pass stones', use_mr: 'खडे बाहेर काढण्यास मदत' }
+  ],
+  gallstones: [
+    { name: 'Ursodeoxycholic acid', use_en: 'Dissolves stones', use_mr: 'खडे विरघळवतो' },
+    { name: 'Pain relievers', use_en: 'Relieves pain', use_mr: 'वेदना कमी करतो' },
+    { name: 'Surgery', use_en: 'Removes gallbladder', use_mr: 'पित्ताशय काढून टाकणे' }
+  ],
+  liver_cirrhosis: [
+    { name: 'Diuretics', use_en: 'Reduces fluid retention', use_mr: 'द्रव कमी करतो' },
+    { name: 'Beta blockers', use_en: 'Prevents bleeding', use_mr: 'रक्तस्त्राव टाळतो' },
+    { name: 'Lactulose', use_en: 'Reduces toxins', use_mr: 'विषारी पदार्थ कमी करतो' }
+  ],
+  fatty_liver: [
+    { name: 'Vitamin E', use_en: 'Antioxidant', use_mr: 'प्रतिकारक' },
+    { name: 'Pioglitazone', use_en: 'Improves insulin sensitivity', use_mr: 'इन्सुलिन संवेदनशीलता सुधारतो' },
+    { name: 'Weight loss', use_en: 'Reduces fat', use_mr: 'चरबी कमी करतो' }
+  ],
+  hypothyroidism: [
+    { name: 'Levothyroxine', use_en: 'Replaces thyroid hormone', use_mr: 'थायरॉईड हार्मोन बदलतो' },
+    { name: 'Iodine supplements', use_en: 'Supports thyroid function', use_mr: 'थायरॉईड कार्य वाढवतो' },
+    { name: 'Regular monitoring', use_en: 'Keeps hormone levels stable', use_mr: 'हार्मोन पातळी स्थिर ठेवतो' }
+  ],
+  hyperthyroidism: [
+    { name: 'Methimazole', use_en: 'Reduces thyroid hormone', use_mr: 'थायरॉईड हार्मोन कमी करतो' },
+    { name: 'Propylthiouracil', use_en: 'Blocks hormone production', use_mr: 'हार्मोन उत्पादन थांबवतो' },
+    { name: 'Beta blockers', use_en: 'Controls symptoms', use_mr: 'लक्षणे नियंत्रित करतो' }
+  ],
+  gout: [
+    { name: 'Allopurinol', use_en: 'Reduces uric acid', use_mr: 'युरिक ऍसिड कमी करतो' },
+    { name: 'Colchicine', use_en: 'Relieves gout pain', use_mr: 'गाउट वेदना कमी करतो' },
+    { name: 'NSAIDs', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' }
+  ],
+  psoriasis: [
+    { name: 'Topical steroids', use_en: 'Reduces skin inflammation', use_mr: 'त्वचेमधील सूज कमी करतो' },
+    { name: 'Methotrexate', use_en: 'Slows skin cell growth', use_mr: 'त्वचेच्या पेशींची वाढ कमी करतो' },
+    { name: 'Vitamin D analogues', use_en: 'Controls symptoms', use_mr: 'लक्षणे नियंत्रित करतो' }
+  ],
+  eczema: [
+    { name: 'Hydrocortisone cream', use_en: 'Relieves itching', use_mr: 'खाज कमी करतो' },
+    { name: 'Moisturizers', use_en: 'Prevents dryness', use_mr: 'कोरडेपणा टाळतो' },
+    { name: 'Antihistamines', use_en: 'Reduces allergic reactions', use_mr: 'अॅलर्जी कमी करतो' }
+  ],
+  acne: [
+    { name: 'Benzoyl peroxide', use_en: 'Kills bacteria', use_mr: 'जीवाणू नष्ट करतो' },
+    { name: 'Retinoids', use_en: 'Prevents clogged pores', use_mr: 'छिद्रे साफ करतो' },
+    { name: 'Antibiotics', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' }
+  ],
+  hypertension_pregnancy: [
+    { name: 'Methyldopa', use_en: 'Lowers blood pressure', use_mr: 'रक्तदाब कमी करतो' },
+    { name: 'Labetalol', use_en: 'Controls hypertension', use_mr: 'उच्च रक्तदाब नियंत्रित करतो' },
+    { name: 'Nifedipine', use_en: 'Relaxes blood vessels', use_mr: 'रक्तवाहिन्या शिथिल करतो' }
+  ],
+  stroke: [
+    { name: 'Aspirin', use_en: 'Prevents blood clots', use_mr: 'रक्त गोठणे टाळतो' },
+    { name: 'Clopidogrel', use_en: 'Reduces clot risk', use_mr: 'रक्त गोठणे कमी करतो' },
+    { name: 'Statins', use_en: 'Lowers cholesterol', use_mr: 'कोलेस्ट्रॉल कमी करतो' }
+  ],
+  alzheimers: [
+    { name: 'Donepezil', use_en: 'Improves memory', use_mr: 'स्मरणशक्ती सुधारतो' },
+    { name: 'Memantine', use_en: 'Controls symptoms', use_mr: 'लक्षणे नियंत्रित करतो' },
+    { name: 'Rivastigmine', use_en: 'Boosts brain function', use_mr: 'मेंदू कार्य वाढवतो' }
+  ],
+  parkinsons: [
+    { name: 'Levodopa', use_en: 'Reduces tremors', use_mr: 'कंप कमी करतो' },
+    { name: 'Carbidopa', use_en: 'Enhances Levodopa', use_mr: 'लेवोडोपा वाढवतो' },
+    { name: 'Dopamine agonists', use_en: 'Stimulates dopamine receptors', use_mr: 'डोपामाइन रिसेप्टर्स सक्रिय करतो' }
+  ],
+  schizophrenia: [
+    { name: 'Risperidone', use_en: 'Treats psychosis', use_mr: 'सायकोसिस उपचार' },
+    { name: 'Olanzapine', use_en: 'Reduces hallucinations', use_mr: 'भ्रम कमी करतो' },
+    { name: 'Quetiapine', use_en: 'Controls symptoms', use_mr: 'लक्षणे नियंत्रित करतो' }
+  ],
+  bipolar_disorder: [
+    { name: 'Lithium', use_en: 'Stabilizes mood', use_mr: 'मनोवृत्ती स्थिर करतो' },
+    { name: 'Valproate', use_en: 'Prevents mood swings', use_mr: 'मूड बदल टाळतो' },
+    { name: 'Carbamazepine', use_en: 'Controls mania', use_mr: 'मेनिया नियंत्रित करतो' }
+  ],
+  insomnia: [
+    { name: 'Zolpidem', use_en: 'Helps sleep', use_mr: 'झोप येण्यास मदत' },
+    { name: 'Melatonin', use_en: 'Regulates sleep cycle', use_mr: 'झोपेचा चक्र नियंत्रित करतो' },
+    { name: 'Diphenhydramine', use_en: 'Induces drowsiness', use_mr: 'निद्रा आणतो' }
+  ],
+  anemia_iron_deficiency: [
+    { name: 'Ferrous sulfate', use_en: 'Iron supplement', use_mr: 'लोहाचा पूरक' },
+    { name: 'Vitamin C', use_en: 'Enhances iron absorption', use_mr: 'लोह शोषण वाढवतो' },
+    { name: 'Folic acid', use_en: 'Supports red blood cells', use_mr: 'लाल रक्तकणिकांसाठी' }
+  ],
+  chronic_kidney_disease: [
+    { name: 'Erythropoietin', use_en: 'Increases red blood cells', use_mr: 'लाल रक्तकणिकांची वाढ' },
+    { name: 'Phosphate binders', use_en: 'Reduces phosphate levels', use_mr: 'फॉस्फेट कमी करतो' },
+    { name: 'Vitamin D', use_en: 'Supports bone health', use_mr: 'हाडांच्या आरोग्यासाठी' }
+  ],
+  bronchitis: [
+    { name: 'Albuterol', use_en: 'Relieves bronchospasm', use_mr: 'ब्राँकायस्पासम कमी करतो' },
+    { name: 'Ipratropium', use_en: 'Opens airways', use_mr: 'श्वास मार्ग उघडतो' },
+    { name: 'Steroids', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' }
+  ],
+  cataract: [
+    { name: 'No specific medicine', use_en: 'Surgical treatment needed', use_mr: 'शस्त्रक्रिया आवश्यक' },
+    { name: 'Vitamin C', use_en: 'Slows cataract progression', use_mr: 'कॅटारॅक्ट वाढ कमी करतो' },
+    { name: 'Vitamin E', use_en: 'Antioxidant effect', use_mr: 'प्रतिकारक प्रभाव' }
+  ],
+  glaucoma: [
+    { name: 'Latanoprost', use_en: 'Reduces eye pressure', use_mr: 'डोळ्याचा दाब कमी करतो' },
+    { name: 'Timolol', use_en: 'Lowers intraocular pressure', use_mr: 'आयनोकोल्यर दाब कमी करतो' },
+    { name: 'Brimonidine', use_en: 'Protects optic nerve', use_mr: 'ऑप्टिक नर्वचे रक्षण करतो' }
+  ],
+  gout: [
+    { name: 'Allopurinol', use_en: 'Lowers uric acid', use_mr: 'युरिक ऍसिड कमी करतो' },
+    { name: 'Colchicine', use_en: 'Relieves pain', use_mr: 'वेदना कमी करतो' },
+    { name: 'NSAIDs', use_en: 'Reduces inflammation', use_mr: 'सूज कमी करतो' }
+  ],
+  hepatitis_c: [
+    { name: 'Sofosbuvir', use_en: 'Antiviral', use_mr: 'अँटीव्हायरल' },
+    { name: 'Ledipasvir', use_en: 'Antiviral', use_mr: 'अँटीव्हायरल' },
+    { name: 'Ribavirin', use_en: 'Antiviral', use_mr: 'अँटीव्हायरल' }
+  ],
+  tuberculosis: [
+    { name: 'Isoniazid', use_en: 'Kills bacteria', use_mr: 'जीवाणू नष्ट करतो' },
+    { name: 'Rifampin', use_en: 'Kills bacteria', use_mr: 'जीवाणू नष्ट करतो' },
+    { name: 'Ethambutol', use_en: 'Prevents resistance', use_mr: 'प्रतिरोधकता टाळतो' }
+  ],
+  diabetes_type1: [
+    { name: 'Insulin', use_en: 'Regulates blood sugar', use_mr: 'रक्तातील साखर नियंत्रित करतो' },
+    { name: 'Glucose monitoring', use_en: 'Keeps sugar in range', use_mr: 'साखर नियंत्रणात ठेवतो' },
+    { name: 'Diet management', use_en: 'Controls sugar intake', use_mr: 'साखर नियंत्रणासाठी आहार' }
+  ],
+  diabetes_type2: [
+    { name: 'Metformin', use_en: 'Lowers blood sugar', use_mr: 'रक्तातील साखर कमी करतो' },
+    { name: 'Sulfonylureas', use_en: 'Stimulates insulin', use_mr: 'इन्सुलिन वाढवतो' },
+    { name: 'DPP-4 inhibitors', use_en: 'Improves insulin response', use_mr: 'इन्सुलिन प्रतिसाद सुधारतो' }
+  ]
+  }
+
+    const allDistricts = [
+      "Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed", "Bhandara", "Buldhana", "Chandrapur", "Dhule", "Gadchiroli",
+      "Gondia", "Hingoli", "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur", "Nanded",
+      "Nandurbar", "Nashik", "Osmanabad", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri", "Sangli", "Satara",
+      "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"
+    ];
+
+ const hospitals = {};
+
+allDistricts.forEach(d => {
+  if (d === 'Ahmednagar') {
+    hospitals[d] = [
+      { name_en: 'District Hospital, Ahmednagar (Government)', name_mr: 'जिल्हा रुग्णालय, अहमदनगर (शासकीय)', contact: '0241-2430506', lat: 19.0945, lng: 74.7384, diseases: 'सर्वसाधारण आजार, अपघात, प्रसूती' },
+      { name_en: 'Hole Multispeciality Hospital (Private)', name_mr: 'होळ मल्टीस्पेशालिटी रुग्णालय (खाजगी)', contact: '02487-222652', lat: 18.6150, lng: 74.6931, diseases: 'हृदय, मधुमेह' },
+      { name_en: 'Saideep Multispecialist Hospital (Private)', name_mr: 'सैदीप मल्टीस्पेशालिस्ट रुग्णालय (खाजगी)', contact: '02427-231245', lat: 19.2525, lng: 74.7187, diseases: 'शस्त्रक्रिया, जनरल' },
+      { name_en: 'Noble Hospital & Research Centre (Private)', name_mr: 'नोबल रुग्णालय व संशोधन केंद्र (खाजगी)', contact: '0241-2421290', lat: 19.1122, lng: 74.7389, diseases: 'मधुमेह, हृदय' },
+      { name_en: 'Bade Hospital (Private)', name_mr: 'बाडे रुग्णालय (खाजगी)', contact: '0241-2424929', lat: 19.1115, lng: 74.7363, diseases: 'प्रसूती, जनरल' },
+      { name_en: 'Patil Hospital and Apex Dental Institute (Private)', name_mr: 'पाटील रुग्णालय आणि अपेक्स डेंटल इन्स्टिट्यूट (खाजगी)', contact: '0241-2320655', lat: 19.1031, lng: 74.7297, diseases: 'दंतचिकित्सा, शस्त्रक्रिया' },
+      { name_en: 'Wankhade Kidney Hospital (Private)', name_mr: 'वंखाडे किडनी रुग्णालय (खाजगी)', contact: '0241-2321601', lat: 19.1007, lng: 74.7352, diseases: 'किडनी रोग, हृदय' },
+      { name_en: 'Zende Hospital (Private)', name_mr: 'झेन्दे रुग्णालय (खाजगी)', contact: '0241-2430326', lat: 19.0993, lng: 74.7360, diseases: 'जनरल, अपघात' },
+      { name_en: 'Pranav Hospital and Maternity Home (Private)', name_mr: 'प्रणव रुग्णालय आणि प्रसूती गृह (खाजगी)', contact: '0241-2552407', lat: 19.0884, lng: 74.7403, diseases: 'प्रसूती, बालरोग' },
+      { name_en: 'Tarade Hospital (Private)', name_mr: 'तारडे रुग्णालय (खाजगी)', contact: '0241-2419292', lat: 19.1105, lng: 74.7401, diseases: 'शस्त्रक्रिया, जनरल' }
+    ];
+  } else if (d === 'Akola') {
+    hospitals[d] = [
+      { name_en: 'District Hospital, Akola (Government)', name_mr: 'जिल्हा रुग्णालय, अकोला (शासकीय)', contact: '0724-2432581', lat: 20.7098, lng: 77.0062, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा, शस्त्रक्रिया' },
+      { name_en: 'Dr. Hedgewar Hospital (Private)', name_mr: 'डॉ. हेडगेवार रुग्णालय (खाजगी)', contact: '0724-2443040', lat: 20.7105, lng: 77.0075, diseases: 'हृदयविकार, मधुमेह' },
+      { name_en: 'Icon Hospital (Private)', name_mr: 'आयकॉन रुग्णालय (खाजगी)', contact: '0724-2450950', lat: 20.7120, lng: 77.0088, diseases: 'हाडांचे विकार, अपघात उपचार' },
+      { name_en: 'Sunshine Multispeciality Hospital (Private)', name_mr: 'सनशाईन मल्टीस्पेशालिटी रुग्णालय (खाजगी)', contact: '0724-2400321', lat: 20.7140, lng: 77.0090, diseases: 'प्रसूती, बालरोग' },
+      { name_en: 'Om Hospital (Private)', name_mr: 'ओम रुग्णालय (खाजगी)', contact: '0724-2452211', lat: 20.7150, lng: 77.0100, diseases: 'नाक-कान-घसा, सर्वसाधारण औषधोपचार' },
+      { name_en: 'Matoshree Hospital (Private)', name_mr: 'मातोश्री रुग्णालय (खाजगी)', contact: '0724-2456789', lat: 20.7160, lng: 77.0110, diseases: 'स्त्रीरोग, अल्ट्रासोनोग्राफी' },
+      { name_en: 'Niramay Hospital (Private)', name_mr: 'निरामय रुग्णालय (खाजगी)', contact: '0724-2440888', lat: 20.7170, lng: 77.0120, diseases: 'त्वचारोग, अ‍ॅलर्जी' },
+      { name_en: 'Lifeline Hospital (Private)', name_mr: 'लाइफलाइन रुग्णालय (खाजगी)', contact: '0724-2465401', lat: 20.7180, lng: 77.0130, diseases: 'आईसीयू, आपत्कालीन सेवा' },
+      { name_en: 'City Hospital (Private)', name_mr: 'सिटी रुग्णालय (खाजगी)', contact: '0724-2478023', lat: 20.7190, lng: 77.0140, diseases: 'बालरोग, लसीकरण' },
+      { name_en: 'Kadam Hospital (Private)', name_mr: 'कदम रुग्णालय (खाजगी)', contact: '0724-2412050', lat: 20.7200, lng: 77.0150, diseases: 'सामान्य शस्त्रक्रिया, फिजिओथेरपी' },
+      { name_en: 'First Aid Health Centre (Government)', name_mr: 'फर्स्ट एड हेल्थ सेंटर (शासकीय)', contact: '0724-2451122', lat: 20.7210, lng: 77.0160, diseases: 'प्राथमिक उपचार, किरकोळ जखमा' },
+      { name_en: 'Fever Care Hospital (Private)', name_mr: 'फिव्हर केअर रुग्णालय (खाजगी)', contact: '0724-2467890', lat: 20.7220, lng: 77.0170, diseases: 'ताप, संसर्गजन्य रोग' }
+    ];
+} else if (d === 'Amravati') {
+    hospitals[d] = [
+      { name_en: 'District Hospital, Amravati (Government)', name_mr: 'जिल्हा रुग्णालय, अमरावती (शासकीय)', contact: '0721-2521234', lat: 20.9333, lng: 77.7500, diseases: 'सर्वसाधारण आजार, बालरोग, प्रसूती' },
+      { name_en: 'Shree Hospital (Private)', name_mr: 'श्री रुग्णालय (खाजगी)', contact: '0721-2567890', lat: 20.9350, lng: 77.7520, diseases: 'हृदय, मधुमेह' },
+      { name_en: 'Sai Multispeciality Hospital (Private)', name_mr: 'साई मल्टीस्पेशालिटी रुग्णालय (खाजगी)', contact: '0721-2543210', lat: 20.9360, lng: 77.7530, diseases: 'शस्त्रक्रिया, जनरल' },
+      { name_en: 'Amravati Heart Care (Private)', name_mr: 'अमरावती हार्ट केअर (खाजगी)', contact: '0721-2561234', lat: 20.9370, lng: 77.7540, diseases: 'हृदय रोग' },
+      { name_en: 'Golden Hospital (Private)', name_mr: 'गोल्डन रुग्णालय (खाजगी)', contact: '0721-2574567', lat: 20.9380, lng: 77.7550, diseases: 'बालरोग, प्रसूती' },
+      { name_en: 'Sunshine Hospital (Private)', name_mr: 'सनशाईन रुग्णालय (खाजगी)', contact: '0721-2587890', lat: 20.9390, lng: 77.7560, diseases: 'त्वचारोग' },
+      { name_en: 'Amravati General Hospital (Private)', name_mr: 'अमरावती जनरल रुग्णालय (खाजगी)', contact: '0721-2591234', lat: 20.9400, lng: 77.7570, diseases: 'सर्वसाधारण आजार' }
+    ];
+  } else if (d === 'Aurangabad') {
+    hospitals[d] = [
+      { name_en: 'District Hospital, Aurangabad (Government)', name_mr: 'जिल्हा रुग्णालय, औरंगाबाद (शासकीय)', contact: '0240-2345678', lat: 19.8762, lng: 75.3433, diseases: 'सर्वसाधारण आजार, अपघात' },
+      { name_en: 'Ruby Hospital (Private)', name_mr: 'रुबी रुग्णालय (खाजगी)', contact: '0240-2341234', lat: 19.8775, lng: 75.3445, diseases: 'मधुमेह, हृदय' },
+      { name_en: 'City Care Hospital (Private)', name_mr: 'सिटी केअर रुग्णालय (खाजगी)', contact: '0240-2348765', lat: 19.8780, lng: 75.3450, diseases: 'प्रसूती, बालरोग' },
+      { name_en: 'Sunshine Hospital (Private)', name_mr: 'सनशाईन रुग्णालय (खाजगी)', contact: '0240-2345555', lat: 19.8790, lng: 75.3460, diseases: 'त्वचारोग, शस्त्रक्रिया' },
+      { name_en: 'Golden Hospital (Private)', name_mr: 'गोल्डन रुग्णालय (खाजगी)', contact: '0240-2346666', lat: 19.8800, lng: 75.3470, diseases: 'हृदय, मधुमेह' },
+      { name_en: 'Aurangabad General Hospital (Private)', name_mr: 'औरंगाबाद जनरल रुग्णालय (खाजगी)', contact: '0240-2347777', lat: 19.8810, lng: 75.3480, diseases: 'सर्वसाधारण आजार' },
+      { name_en: 'Care Hospital (Private)', name_mr: 'केअर रुग्णालय (खाजगी)', contact: '0240-2348888', lat: 19.8820, lng: 75.3490, diseases: 'बालरोग, प्रसूती' }
+    ];
+ } else if (d === 'Beed') {
+  hospitals[d] = [
+    { name_en: 'Civil Hospital, Beed', name_mr: 'सिव्हिल हॉस्पिटल, बीड', contact: '02441-220123', lat: 18.9904, lng: 75.7605, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Government Women Hospital, Neknoor', name_mr: 'सरकारी महिला रुग्णालय, नेकनूर', contact: '02441-220789', lat: 19.0200, lng: 75.7800, diseases: 'महिला आरोग्य, प्रसूती' },
+    { name_en: 'Swami Ramanand Teerth Rural Government Hospital, Ambajogai', name_mr: 'स्वामी रामानंद तीर्थ ग्रामीण शासकीय रुग्णालय, अमरजोगाई', contact: '02446-223456', lat: 18.9400, lng: 75.8200, diseases: 'सर्वसाधारण आजार, ग्रामीण आरोग्य सेवा' },
+    { name_en: 'Shri Hospital, Beed', name_mr: 'श्री हॉस्पिटल, बीड', contact: '02441-220456', lat: 18.9910, lng: 75.7610, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Shree Hospital, Kaij', name_mr: 'श्री हॉस्पिटल, काईज', contact: '02445-225678', lat: 18.8500, lng: 75.5400, diseases: 'जनरल मेडिसिन, शस्त्रक्रिया' },
+    { name_en: 'Siddhivinayak Hospital, Parli', name_mr: 'सिद्धिविनायक हॉस्पिटल, पारळी', contact: '02447-226789', lat: 19.2200, lng: 75.9200, diseases: 'सर्वसाधारण आजार, बालरोग' },
+    { name_en: 'Shree Ganesh Hospital, Majalgaon', name_mr: 'श्री गणेश हॉस्पिटल, माजलगाव', contact: '02448-227890', lat: 18.8000, lng: 76.0500, diseases: 'सामान्य आजार, प्रसूती' },
+    { name_en: 'Sanjeevani Hospital, Georai', name_mr: 'संजीवनी हॉस्पिटल, जिओराई', contact: '02449-228901', lat: 19.0800, lng: 75.6700, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' }
+  ];
+  } else if (d === 'Bhandara') {
+  hospitals[d] = [
+    { name_en: 'District General Hospital, Bhandara', name_mr: 'जिल्हा सामान्य रुग्णालय, भंडारा', contact: '07182-222333', lat: 21.1800, lng: 79.7300, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Sub District Hospital, Tumsar', name_mr: 'उपजिल्हा रुग्णालय, टुमसर', contact: '07186-223344', lat: 21.2000, lng: 79.9000, diseases: 'सर्वसाधारण आजार, शस्त्रक्रिया' },
+    { name_en: 'Rural Hospital, Pavni', name_mr: 'ग्रामीण रुग्णालय, पावनी', contact: '07185-224455', lat: 21.1500, lng: 79.8600, diseases: 'ग्रामीण आरोग्य सेवा, प्रसूती' },
+    { name_en: 'SDH 50 Sakoli, Sakoli', name_mr: 'उपजिल्हा रुग्णालय ५०, साकोळी', contact: '07189-225566', lat: 21.0500, lng: 79.8800, diseases: 'सर्वसाधारण आजार, बालरोग' },
+    { name_en: 'Bhure Hospital, Tumsar', name_mr: 'भुरे हॉस्पिटल, टुमसर', contact: '07186-226677', lat: 21.2100, lng: 79.8900, diseases: 'जनरल मेडिसिन, त्वचारोग' },
+    { name_en: 'Tumsar City Multispeciality Hospital, Tumsar', name_mr: 'टुमसर सिटी मल्टीस्पेशालिटी हॉस्पिटल, टुमसर', contact: '07186-227788', lat: 21.2150, lng: 79.8950, diseases: 'मल्टीस्पेशालिटी, हृदय रोग' },
+    { name_en: 'Parvati Nursing Home, Bhandara', name_mr: 'पार्वती नर्सिंग होम, भंडारा', contact: '07182-228899', lat: 21.1850, lng: 79.7350, diseases: 'प्रसूती, बालरोग' },
+    { name_en: 'Indrakshi Eye Care, Bhandara', name_mr: 'इंद्राक्षी आय केअर, भंडारा', contact: '07182-229900', lat: 21.1900, lng: 79.7400, diseases: 'डोळ्यांचे आजार' }
+  ];
+  } else if (d === 'Buldhana') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Buldhana', name_mr: 'जिल्हा रुग्णालय, बुलढाणा', contact: '07262-220123', lat: 20.5412, lng: 76.1952, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'General Hospital, Khamgaon', name_mr: 'जनरल रुग्णालय, खामगाव', contact: '07262-221234', lat: 20.6541, lng: 76.5224, diseases: 'सर्वसाधारण आजार, शस्त्रक्रिया' },
+    { name_en: 'Sub District Hospital, Malkapur', name_mr: 'उपजिल्हा रुग्णालय, मलकापूर', contact: '07262-222345', lat: 20.8210, lng: 76.5167, diseases: 'सर्वसाधारण आजार, प्रसूती' },
+    { name_en: 'Sub District Hospital, Shegaon', name_mr: 'उपजिल्हा रुग्णालय, शेगाव', contact: '07262-223456', lat: 20.8714, lng: 76.6232, diseases: 'सर्वसाधारण आजार, बालरोग' },
+    { name_en: 'Rural Hospital, Mehkar', name_mr: 'ग्रामीण रुग्णालय, मेहकर', contact: '07262-224567', lat: 20.6071, lng: 76.5790, diseases: 'ग्रामीण आरोग्य सेवा, प्रसूती' },
+    { name_en: 'Rural Hospital, Lonar', name_mr: 'ग्रामीण रुग्णालय, लोणार', contact: '07262-225678', lat: 20.4412, lng: 76.5178, diseases: 'ग्रामीण आरोग्य सेवा' },
+    { name_en: 'Rural Hospital, Sindkhed Raja', name_mr: 'ग्रामीण रुग्णालय, सिंधखेड राजा', contact: '07262-226789', lat: 20.5945, lng: 76.2543, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Motala', name_mr: 'ग्रामीण रुग्णालय, मोटाळा', contact: '07262-227890', lat: 20.6700, lng: 76.2845, diseases: 'सर्वसाधारण आजार, बालरोग' }
+  ];
+ } else if (d === 'Chandrapur') {
+  hospitals[d] = [
+    { name_en: 'Civil Hospital, Chandrapur', name_mr: 'सिव्हिल रुग्णालय, चंद्रपूर', contact: '07172-220123', lat: 19.9532, lng: 79.3003, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'CHL Multi Specialty Hospital, Sarkar Nagar', name_mr: 'सीएचएल मल्टी स्पेशालिटी रुग्णालय, सरकार नगर', contact: '07172-221234', lat: 19.9510, lng: 79.3050, diseases: 'शस्त्रक्रिया, हृदय रोग' },
+    { name_en: 'Manwatkar Hospital, Ekori Ward', name_mr: 'मनवतकर रुग्णालय, एकोरी वार्ड', contact: '07172-222345', lat: 19.9525, lng: 79.2987, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Mehra Hospital, Civil Lines', name_mr: 'मेहरा रुग्णालय, सिव्हिल लाईन्स', contact: '07172-223456', lat: 19.9540, lng: 79.3031, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Zade Hospital, WHC Road', name_mr: 'झाडे रुग्णालय, डब्ल्यूएचसी रोड', contact: '07172-224567', lat: 19.9560, lng: 79.3045, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Siddhivinayak Hospital, Chandrapur', name_mr: 'सिद्धिविनायक रुग्णालय, चंद्रपूर', contact: '07172-225678', lat: 19.9550, lng: 79.3020, diseases: 'हृदय रोग, मधुमेह' },
+    { name_en: 'Dr. Ambedkar Hospital, Chandrapur', name_mr: 'डॉ. आंबेडकर रुग्णालय, चंद्रपूर', contact: '07172-226789', lat: 19.9538, lng: 79.2995, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Ashirwad Hospital, Chandrapur', name_mr: 'आशीर्वाद रुग्णालय, चंद्रपूर', contact: '07172-227890', lat: 19.9520, lng: 79.3010, diseases: 'प्रसूती, बालरोग' }
+  ];
+} else if (d === 'Dhule') {
+  hospitals[d] = [
+    { name_en: 'Shri Bhausaheb Hire Government Medical College and Hospital, Dhule', name_mr: 'श्री भाऊसाहेब हिरे शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, धुळे', contact: '02562-220123', lat: 20.9022, lng: 74.7749, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'ACPM Medical College and Hospital, Dhule', name_mr: 'एसीपीएम वैद्यकीय महाविद्यालय आणि रुग्णालय, धुळे', contact: '02562-221234', lat: 20.9030, lng: 74.7755, diseases: 'शस्त्रक्रिया, जनरल' },
+    { name_en: 'Civil Hospital, Dhule', name_mr: 'सिव्हिल रुग्णालय, धुळे', contact: '02562-222345', lat: 20.9040, lng: 74.7760, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Sahyadri Hospital, Dhule', name_mr: 'सह्याद्री रुग्णालय, धुळे', contact: '02562-223456', lat: 20.9050, lng: 74.7770, diseases: 'हृदय रोग, मधुमेह' },
+    { name_en: 'Sanjeevani Hospital, Dhule', name_mr: 'संजीवनी रुग्णालय, धुळे', contact: '02562-224567', lat: 20.9060, lng: 74.7780, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Siddhivinayak Hospital, Dhule', name_mr: 'सिद्धिविनायक रुग्णालय, धुळे', contact: '02562-225678', lat: 20.9070, lng: 74.7790, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Aayush Hospital, Dhule', name_mr: 'आयुष रुग्णालय, धुळे', contact: '02562-226789', lat: 20.9080, lng: 74.7800, diseases: 'प्रसूती, बालरोग' },
+    { name_en: 'Sanjeevani Multispeciality Hospital, Dhule', name_mr: 'संजीवनी मल्टीस्पेशालिटी रुग्णालय, धुळे', contact: '02562-227890', lat: 20.9090, lng: 74.7810, diseases: 'शस्त्रक्रिया, जनरल' }
+  ];
+
+} else if (d === 'Gadchiroli') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Gadchiroli', name_mr: 'जिल्हा रुग्णालय, गडचिरोली', contact: '07132-220123', lat: 20.1101, lng: 80.0089, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Sub District Hospital, Aheri', name_mr: 'उपजिल्हा रुग्णालय, आheri', contact: '07132-221234', lat: 20.0400, lng: 79.9300, diseases: 'जनरल, प्रसूती' },
+    { name_en: 'Rural Hospital, Armori', name_mr: 'ग्रामीण रुग्णालय, आर्मोरी', contact: '07132-222345', lat: 20.2300, lng: 80.1800, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Etapalli', name_mr: 'ग्रामीण रुग्णालय, एटापली', contact: '07132-223456', lat: 20.3200, lng: 80.1100, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Rural Hospital, Kurkheda', name_mr: 'ग्रामीण रुग्णालय, कुरखेदा', contact: '07132-224567', lat: 20.4000, lng: 80.0000, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Chamorshi', name_mr: 'ग्रामीण रुग्णालय, चामोर्शी', contact: '07132-225678', lat: 20.5000, lng: 79.9500, diseases: 'प्रसूती, शस्त्रक्रिया' },
+    { name_en: 'Rural Hospital, Desaiganj', name_mr: 'ग्रामीण रुग्णालय, देसाईगंज', contact: '07132-226789', lat: 20.6000, lng: 80.0200, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Sironcha', name_mr: 'ग्रामीण रुग्णालय, सिरोंचा', contact: '07132-227890', lat: 19.9500, lng: 79.8000, diseases: 'आपत्कालीन सेवा' }
+  ];
+} else if (d === 'Gondia') {
+  hospitals[d] = [
+    { name_en: 'Government Medical College and Hospital, Gondia', name_mr: 'शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, गोंदिया', contact: '07182-220123', lat: 21.4600, lng: 80.2000, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Gondia', name_mr: 'सिव्हिल रुग्णालय, गोंदिया', contact: '07182-221234', lat: 21.4605, lng: 80.2100, diseases: 'जनरल, प्रसूती' },
+    { name_en: 'Rural Hospital, Tirora', name_mr: 'ग्रामीण रुग्णालय, तिरोरा', contact: '07182-222345', lat: 21.3700, lng: 80.1500, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Amgaon', name_mr: 'ग्रामीण रुग्णालय, आमगाव', contact: '07182-223456', lat: 21.4000, lng: 80.1800, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Rural Hospital, Deori', name_mr: 'ग्रामीण रुग्णालय, देओरी', contact: '07182-224567', lat: 21.3200, lng: 80.1700, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Salekasa', name_mr: 'ग्रामीण रुग्णालय, सालेकसा', contact: '07182-225678', lat: 21.2800, lng: 80.1000, diseases: 'प्रसूती, शस्त्रक्रिया' },
+    { name_en: 'Rural Hospital, Goregaon', name_mr: 'ग्रामीण रुग्णालय, गोरगाव', contact: '07182-226789', lat: 21.3500, lng: 80.1200, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Arjuni Morgaon', name_mr: 'ग्रामीण रुग्णालय, अर्जुनी मोरगाव', contact: '07182-227890', lat: 21.3900, lng: 80.1300, diseases: 'आपत्कालीन सेवा' }
+  ];
+} else if (d === 'Hingoli') {
+  hospitals[d] = [
+    { name_en: 'District Civil Hospital, Hingoli', name_mr: 'जिल्हा सिव्हिल रुग्णालय, हिंगोली', contact: '02456-220123', lat: 19.7200, lng: 77.1500, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Sub District Hospital, Basmath', name_mr: 'उपजिल्हा रुग्णालय, बसमाथ', contact: '02456-221234', lat: 19.7500, lng: 77.2000, diseases: 'जनरल, प्रसूती' },
+    { name_en: 'Rural Hospital, Kalamnuri', name_mr: 'ग्रामीण रुग्णालय, काळमुरी', contact: '02456-222345', lat: 19.6800, lng: 77.1800, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Sengaon', name_mr: 'ग्रामीण रुग्णालय, सेंगाव', contact: '02456-223456', lat: 19.6900, lng: 77.1700, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Rural Hospital, Aundha Nagnath', name_mr: 'ग्रामीण रुग्णालय, औंधा नागनाथ', contact: '02456-224567', lat: 19.7100, lng: 77.1400, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Vasmat', name_mr: 'ग्रामीण रुग्णालय, वसमत', contact: '02456-225678', lat: 19.7300, lng: 77.1300, diseases: 'प्रसूती, शस्त्रक्रिया' },
+    { name_en: 'Rural Hospital, Pusegaon', name_mr: 'ग्रामीण रुग्णालय, पुसगाव', contact: '02456-226789', lat: 19.7400, lng: 77.1600, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Narsi', name_mr: 'ग्रामीण रुग्णालय, नर्सी', contact: '02456-227890', lat: 19.7000, lng: 77.1200, diseases: 'आपत्कालीन सेवा' }
+  ];
+} else if (d === 'Jalgaon') {
+  hospitals[d] = [
+    { name_en: 'Government Medical College and Hospital, Jalgaon', name_mr: 'शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, जळगाव', contact: '0257-220123', lat: 21.0097, lng: 75.5610, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Jalgaon', name_mr: 'सिव्हिल रुग्णालय, जळगाव', contact: '0257-221234', lat: 21.0105, lng: 75.5650, diseases: 'जनरल, प्रसूती' },
+    { name_en: 'Shree Hospital, Jalgaon', name_mr: 'श्री रुग्णालय, जळगाव', contact: '0257-222345', lat: 21.0110, lng: 75.5620, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Sanjeevani Hospital, Jalgaon', name_mr: 'संजीवनी रुग्णालय, जळगाव', contact: '0257-223456', lat: 21.0120, lng: 75.5630, diseases: 'त्वचारोग, बालरोग' },
+    { name_en: 'Aayush Hospital, Jalgaon', name_mr: 'आयुष रुग्णालय, जळगाव', contact: '0257-224567', lat: 21.0130, lng: 75.5640, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Siddhivinayak Hospital, Jalgaon', name_mr: 'सिद्धिविनायक रुग्णालय, जळगाव', contact: '0257-225678', lat: 21.0140, lng: 75.5655, diseases: 'हृदय रोग' },
+    { name_en: 'Manav Hospital, Jalgaon', name_mr: 'मनव रुग्णालय, जळगाव', contact: '0257-226789', lat: 21.0150, lng: 75.5660, diseases: 'प्रसूती, शस्त्रक्रिया' },
+    { name_en: 'Sanjeevani Multispeciality Hospital, Jalgaon', name_mr: 'संजीवनी मल्टीस्पेशालिटी रुग्णालय, जळगाव', contact: '0257-227890', lat: 21.0160, lng: 75.5670, diseases: 'सर्वसाधारण आजार' }
+  ];
+} else if (d === 'Jalna') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Jalna', name_mr: 'जिल्हा रुग्णालय, जालना', contact: '02482-220123', lat: 19.8400, lng: 75.8800, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Government Women Hospital, Jalna', name_mr: 'शासकीय महिला रुग्णालय, जालना', contact: '02482-221234', lat: 19.8420, lng: 75.8820, diseases: 'प्रसूती, बालरोग' },
+    { name_en: 'Jalna Civil Hospital', name_mr: 'जालना सिव्हिल रुग्णालय', contact: '02482-222345', lat: 19.8450, lng: 75.8850, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Shree Hospital, Jalna', name_mr: 'श्री रुग्णालय, जालना', contact: '02482-223456', lat: 19.8470, lng: 75.8870, diseases: 'त्वचारोग' },
+    { name_en: 'Nanded Hospital, Jalna', name_mr: 'नांदेड रुग्णालय, जालना', contact: '02482-224567', lat: 19.8490, lng: 75.8890, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Aayush Multispeciality Hospital, Jalna', name_mr: 'आयुष मल्टीस्पेशालिटी रुग्णालय, जालना', contact: '02482-225678', lat: 19.8510, lng: 75.8910, diseases: 'शस्त्रक्रिया' },
+    { name_en: 'Siddhivinayak Hospital, Jalna', name_mr: 'सिद्धिविनायक रुग्णालय, जालना', contact: '02482-226789', lat: 19.8530, lng: 75.8930, diseases: 'हृदय रोग' },
+    { name_en: 'Sunshine Hospital, Jalna', name_mr: 'सनशाईन रुग्णालय, जालना', contact: '02482-227890', lat: 19.8550, lng: 75.8950, diseases: 'सर्वसाधारण आजार' }
+  ];
+  } else if (d === 'Kolhapur') {
+  hospitals[d] = [
+    { name_en: 'Government Medical College and Hospital, Kolhapur', name_mr: 'शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, कोल्हापूर', contact: '0231-2601010', lat: 16.702294, lng: 74.226246, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'District Hospital, Kolhapur', name_mr: 'जिल्हा रुग्णालय, कोल्हापूर', contact: '0231-2651234', lat: 16.702359, lng: 74.226310, diseases: 'जनरल, प्रसूती' },
+    { name_en: 'Matoshri Hospital, Kolhapur', name_mr: 'मातोश्री रुग्णालय, कोल्हापूर', contact: '0231-2662345', lat: 16.6960, lng: 74.2460, diseases: 'हृदय रोग, शस्त्रक्रिया' },
+    { name_en: 'Rural Hospital, Radhanagari', name_mr: 'ग्रामिण रुग्णालय, राधानगरी', contact: '02327-271234', lat: 16.8170, lng: 73.9410, diseases: 'सर्वसाधारण आजार, प्राथमिक उपचार' },
+    { name_en: 'Rural Hospital, Panhala', name_mr: 'ग्रामिण रुग्णालय, पन्हाळा', contact: '02323-282345', lat: 16.6830, lng: 74.1000, diseases: 'प्रसूती, बालरोग' },
+    { name_en: 'Shree Hospital, Kolhapur', name_mr: 'श्री रुग्णालय, कोल्हापूर', contact: '0231-2673456', lat: 16.6970, lng: 74.2470, diseases: 'बालरोग, त्वचारोग' },
+    { name_en: 'Rural Hospital, Hatgaon', name_mr: 'ग्रामिण रुग्णालय, हातगाव', contact: '02322-272222', lat: 16.7300, lng: 74.1700, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Rural Hospital, Gaganbavada', name_mr: 'ग्रामिण रुग्णालय, गगनबावडा', contact: '02321-273333', lat: 16.6000, lng: 74.0500, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Sushrusha Hospital, Kolhapur', name_mr: 'सुषरूषा रुग्णालय, कोल्हापूर', contact: '0231-2695678', lat: 16.6990, lng: 74.2490, diseases: 'प्रसूती, शस्त्रक्रिया' },
+    { name_en: 'Jagdamba Hospital, Kolhapur', name_mr: 'जगदंबा रुग्णालय, कोल्हापूर', contact: '0231-2606789', lat: 16.7000, lng: 74.2500, diseases: 'त्वचारोग, जनरल' },
+    { name_en: 'Matoshree Multispeciality Hospital, Kolhapur', name_mr: 'मातोश्री मल्टीस्पेशालिटी रुग्णालय, कोल्हापूर', contact: '0231-2617890', lat: 16.7010, lng: 74.2510, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Rajaram Hospital, Kolhapur', name_mr: 'राजाराम रुग्णालय, कोल्हापूर', contact: '0231-2651234', lat: 16.7050, lng: 74.2550, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Ichalkaranji Hospital, Ichalkaranji', name_mr: 'इचलकरंजी रुग्णालय, इचलकरंजी', contact: '02333-240101', lat: 16.685840, lng: 74.458099, diseases: 'सर्वसाधारण आजार, बालरोग' },
+    { name_en: 'Ghosarwad Hospital, Kolhapur', name_mr: 'घोसारवाड रुग्णालय, कोल्हापूर', contact: '0231-2656789', lat: 16.614301, lng: 74.559865, diseases: 'जनरल, प्रसूती' }
+  ];
+} else if (d === 'Latur') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Latur (Government)', name_mr: 'जिल्हा रुग्णालय, लातूर (शासकीय)', contact: '02382-220101', lat: 18.4060, lng: 76.5670, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Shree Hospital, Latur (Private)', name_mr: 'श्री रुग्णालय, लातूर (खाजगी)', contact: '02382-220202', lat: 18.4070, lng: 76.5680, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Sanjeevani Hospital, Latur', name_mr: 'संजीवनी रुग्णालय, लातूर', contact: '02382-220303', lat: 18.4080, lng: 76.5690, diseases: 'शस्त्रक्रिया, जनरल' },
+    { name_en: 'Sai Multispeciality Hospital, Latur', name_mr: 'साई मल्टीस्पेशालिटी रुग्णालय, लातूर', contact: '02382-220404', lat: 18.4090, lng: 76.5700, diseases: 'बालरोग, प्रसूती' },
+    { name_en: 'Golden Hospital, Latur', name_mr: 'गोल्डन रुग्णालय, लातूर', contact: '02382-220505', lat: 18.4100, lng: 76.5710, diseases: 'त्वचारोग' },
+    { name_en: 'Sunshine Hospital, Latur', name_mr: 'सनशाईन रुग्णालय, लातूर', contact: '02382-220606', lat: 18.4110, lng: 76.5720, diseases: 'हृदय रोग' },
+    { name_en: 'Latur Heart Care, Latur', name_mr: 'लातूर हार्ट केअर, लातूर', contact: '02382-220707', lat: 18.4120, lng: 76.5730, diseases: 'हृदय रोग' },
+    { name_en: 'Latur General Hospital', name_mr: 'लातूर जनरल रुग्णालय', contact: '02382-220808', lat: 18.4130, lng: 76.5740, diseases: 'सर्वसाधारण आजार' }
+  ];
+} else if (d === 'Mumbai City') {
+  hospitals[d] = [
+    { name_en: 'KEM Hospital', name_mr: 'के.ई.एम. रुग्णालय', contact: '022-24196000', lat: 18.9647, lng: 72.8258, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'J.J. Hospital', name_mr: 'जे.जे. रुग्णालय', contact: '022-23734500', lat: 18.9531, lng: 72.8258, diseases: 'शस्त्रक्रिया, जनरल' },
+    { name_en: 'Bombay Hospital', name_mr: 'बॉम्बे रुग्णालय', contact: '022-66650000', lat: 18.9662, lng: 72.8320, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Lilavati Hospital', name_mr: 'लिलावती रुग्णालय', contact: '022-26750808', lat: 19.0602, lng: 72.8296, diseases: 'स्त्रीरोग, प्रसूती' },
+    { name_en: 'Breach Candy Hospital', name_mr: 'ब्रिच कँडी रुग्णालय', contact: '022-23623000', lat: 18.9877, lng: 72.8185, diseases: 'बालरोग, त्वचारोग' },
+    { name_en: 'Nanavati Hospital', name_mr: 'नानावटी रुग्णालय', contact: '022-26750707', lat: 19.0669, lng: 72.8226, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Prince Aly Khan Hospital', name_mr: 'प्रिन्स अली खान रुग्णालय', contact: '022-23712404', lat: 18.9916, lng: 72.8275, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Masina Hospital', name_mr: 'मसिना रुग्णालय', contact: '022-23707744', lat: 18.9562, lng: 72.8300, diseases: 'जनरल मेडिसिन, शस्त्रक्रिया' }
+  ];
+} else if (d === 'Mumbai Suburban') {
+  hospitals[d] = [
+    { name_en: 'Sion Hospital', name_mr: 'सिओन रुग्णालय', contact: '022-24077000', lat: 19.0291, lng: 72.8743, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Hiranandani Hospital', name_mr: 'हिरानंदानी रुग्णालय', contact: '022-67527777', lat: 19.2294, lng: 72.8536, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Nanavati Hospital Vashi', name_mr: 'नानावटी रुग्णालय, वाशी', contact: '022-27881500', lat: 19.0611, lng: 72.9980, diseases: 'जनरल, बालरोग' },
+    { name_en: 'L.T.M.G. Hospital, Sion', name_mr: 'एल.टी.एम.जी. रुग्णालय, सिओन', contact: '022-24077001', lat: 19.0302, lng: 72.8747, diseases: 'शस्त्रक्रिया, आपत्कालीन सेवा' },
+    { name_en: 'Wockhardt Hospital, Mira Road', name_mr: 'वॉकहार्ट रुग्णालय, मीरा रोड', contact: '022-40154000', lat: 19.3060, lng: 72.8607, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Holy Family Hospital, Bandra West', name_mr: 'हॉली फॅमिली रुग्णालय, बांद्रा वेस्ट', contact: '022-26490011', lat: 19.0601, lng: 72.8297, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'SevenHills Hospital, Andheri', name_mr: 'सेव्हन हिल्स रुग्णालय, अंधेरी', contact: '022-40705050', lat: 19.1196, lng: 72.8494, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Rajawadi Hospital, Ghatkopar', name_mr: 'राजवाडी रुग्णालय, घाटकोपर', contact: '022-25061122', lat: 19.0912, lng: 72.9100, diseases: 'सर्वसाधारण आजार' }
+  ];
+
+} else if (d === 'Nagpur') {
+  hospitals[d] = [
+    { name_en: 'Government Medical College & Hospital, Nagpur', name_mr: 'शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, नागपूर', contact: '0712-2556611', lat: 21.1466, lng: 79.0889, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Orange City Hospital', name_mr: 'ऑरेंज सिटी रुग्णालय', contact: '0712-2663500', lat: 21.1511, lng: 79.0810, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Saraswati Hospital', name_mr: 'सरस्वती रुग्णालय', contact: '0712-2551100', lat: 21.1475, lng: 79.0892, diseases: 'बालरोग, प्रसूती' },
+    { name_en: 'MIMSR Medical College Hospital', name_mr: 'एमआयएमएसआर वैद्यकीय महाविद्यालय रुग्णालय', contact: '0712-2241070', lat: 21.1314, lng: 79.0840, diseases: 'शस्त्रक्रिया, जनरल' },
+    { name_en: 'Rao Hospital', name_mr: 'राव रुग्णालय', contact: '0712-2523222', lat: 21.1450, lng: 79.0800, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Wockhardt Hospital', name_mr: 'वॉकहार्ट रुग्णालय', contact: '0712-6613000', lat: 21.1562, lng: 79.0905, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'City Hospital', name_mr: 'सिटी रुग्णालय', contact: '0712-2567890', lat: 21.1520, lng: 79.0850, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'NKP Salve Institute', name_mr: 'एनकेपी साळवे संस्था', contact: '0712-2664020', lat: 21.1500, lng: 79.0890, diseases: 'जनरल मेडिसिन' }
+  ];
+} else if (d === 'Nanded') {
+  hospitals[d] = [
+    { name_en: 'Government Medical College and Hospital, Nanded', name_mr: 'शासकीय वैद्यकीय महाविद्यालय आणि रुग्णालय, नांदेड', contact: '02462-230121', lat: 19.1553, lng: 77.3203, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Kasturba Hospital', name_mr: 'कस्तूरबा रुग्णालय', contact: '02462-230987', lat: 19.1525, lng: 77.3220, diseases: 'स्त्रीरोग, प्रसूती' },
+    { name_en: 'Guru Nanak Hospital', name_mr: 'गुरु नानक रुग्णालय', contact: '02462-231234', lat: 19.1540, lng: 77.3190, diseases: 'हृदय रोग' },
+    { name_en: 'Saraswati Hospital', name_mr: 'सरस्वती रुग्णालय', contact: '02462-230876', lat: 19.1530, lng: 77.3210, diseases: 'बालरोग, जनरल मेडिसिन' },
+    { name_en: 'Swami Hospital', name_mr: 'स्वामी रुग्णालय', contact: '02462-230765', lat: 19.1560, lng: 77.3225, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Anand Hospital', name_mr: 'आनंद रुग्णालय', contact: '02462-231111', lat: 19.1500, lng: 77.3230, diseases: 'त्वचारोग' },
+    { name_en: 'Vasant Hospital', name_mr: 'वसंत रुग्णालय', contact: '02462-230555', lat: 19.1580, lng: 77.3205, diseases: 'शस्त्रक्रिया' },
+    { name_en: 'Nanded Heart Care', name_mr: 'नांदेड हार्ट केअर', contact: '02462-230999', lat: 19.1550, lng: 77.3180, diseases: 'हृदय रोग' }
+  ];
+} else if (d === 'Nandurbar') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Nandurbar (Government)', name_mr: 'जिल्हा रुग्णालय, नंदुरबार (शासकीय)', contact: '02564-222333', lat: 21.6250, lng: 74.2100, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Shahada (Government)', name_mr: 'सिव्हिल रुग्णालय, शाहदा (शासकीय)', contact: '02564-230444', lat: 21.4500, lng: 74.1000, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Zilla Rugnalay, Nandurbar', name_mr: 'जिल्हा रुग्णालय, नंदुरबार', contact: '02564-225555', lat: 21.6270, lng: 74.2150, diseases: 'बालरोग, प्रसूती' },
+    { name_en: 'Shri Sai Hospital, Nandurbar (Private)', name_mr: 'श्री साई रुग्णालय, नंदुरबार (खाजगी)', contact: '02564-222222', lat: 21.6260, lng: 74.2110, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Rural Hospital, Taloda', name_mr: 'ग्रामीण रुग्णालय, तालोदा', contact: '02564-223333', lat: 21.7300, lng: 74.1200, diseases: 'सामान्य आजार' },
+    { name_en: 'Primary Health Center, Akkalkuwa', name_mr: 'प्राथमिक आरोग्य केंद्र, अकळकुवा', contact: '02564-224444', lat: 21.8200, lng: 74.0500, diseases: 'सामान्य आजार' }
+  ];
+} else if (d === 'Nashik') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Nashik (Government)', name_mr: 'जिल्हा रुग्णालय, नाशिक (शासकीय)', contact: '0253-2512345', lat: 20.0110, lng: 73.7900, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Nashik', name_mr: 'सिव्हिल रुग्णालय, नाशिक', contact: '0253-2516789', lat: 20.0120, lng: 73.7890, diseases: 'बालरोग, प्रसूती' },
+    { name_en: 'Apollo Hospital, Nashik', name_mr: 'अपोलो रुग्णालय, नाशिक', contact: '0253-2523456', lat: 20.0130, lng: 73.7880, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Sahyadri Hospital, Nashik', name_mr: 'सह्याद्री रुग्णालय, नाशिक', contact: '0253-2534567', lat: 20.0140, lng: 73.7870, diseases: 'हृदय रोग' },
+    { name_en: 'Nashik Rural Hospital', name_mr: 'नाशिक ग्रामीण रुग्णालय', contact: '0253-2545678', lat: 20.0150, lng: 73.7860, diseases: 'ग्रामीण आजार' },
+    { name_en: 'Shree Hospital, Nashik', name_mr: 'श्री रुग्णालय, नाशिक', contact: '0253-2556789', lat: 20.0160, lng: 73.7850, diseases: 'त्वचारोग' },
+    { name_en: 'Care Hospital, Nashik', name_mr: 'केअर रुग्णालय, नाशिक', contact: '0253-2567890', lat: 20.0170, lng: 73.7840, diseases: 'जनरल' },
+    { name_en: 'Primary Health Center, Nashik', name_mr: 'प्राथमिक आरोग्य केंद्र, नाशिक', contact: '0253-2578901', lat: 20.0180, lng: 73.7830, diseases: 'सामान्य आजार' }
+  ];
+} else if (d === 'Osmanabad') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Osmanabad (Government)', name_mr: 'जिल्हा रुग्णालय, उस्मानाबाद (शासकीय)', contact: '02472-220123', lat: 18.1833, lng: 76.0417, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Civil Hospital, Osmanabad', name_mr: 'सिव्हिल रुग्णालय, उस्मानाबाद', contact: '02472-220456', lat: 18.1840, lng: 76.0420, diseases: 'बालरोग, प्रसूती' },
+    { name_en: 'Shree Hospital, Osmanabad', name_mr: 'श्री रुग्णालय, उस्मानाबाद', contact: '02472-220789', lat: 18.1850, lng: 76.0430, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Osmanabad Rural Hospital', name_mr: 'उस्मानाबाद ग्रामीण रुग्णालय', contact: '02472-221111', lat: 18.1860, lng: 76.0440, diseases: 'ग्रामीण आजार' },
+    { name_en: 'Care Hospital, Osmanabad', name_mr: 'केअर रुग्णालय, उस्मानाबाद', contact: '02472-221222', lat: 18.1870, lng: 76.0450, diseases: 'त्वचारोग' },
+    { name_en: 'Primary Health Center, Osmanabad', name_mr: 'प्राथमिक आरोग्य केंद्र, उस्मानाबाद', contact: '02472-221333', lat: 18.1880, lng: 76.0460, diseases: 'सामान्य आजार' },
+    { name_en: 'Sanjeevani Hospital, Osmanabad', name_mr: 'संजीवनी रुग्णालय, उस्मानाबाद', contact: '02472-221444', lat: 18.1890, lng: 76.0470, diseases: 'हृदय रोग' },
+    { name_en: 'Golden Hospital, Osmanabad', name_mr: 'गोल्डन रुग्णालय, उस्मानाबाद', contact: '02472-221555', lat: 18.1900, lng: 76.0480, diseases: 'शस्त्रक्रिया' }
+  ];
+} else if (d === 'Palghar') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Palghar (Government)', name_mr: 'जिल्हा रुग्णालय, पालघर (शासकीय)', contact: '02525-220123', lat: 19.6833, lng: 72.7500, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Civil Hospital, Palghar', name_mr: 'सिव्हिल रुग्णालय, पालघर', contact: '02525-220456', lat: 19.6840, lng: 72.7510, diseases: 'बालरोग' },
+    { name_en: 'Shree Hospital, Palghar', name_mr: 'श्री रुग्णालय, पालघर', contact: '02525-220789', lat: 19.6850, lng: 72.7520, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Palghar Rural Hospital', name_mr: 'पालघर ग्रामीण रुग्णालय', contact: '02525-221111', lat: 19.6860, lng: 72.7530, diseases: 'ग्रामीण आजार' },
+    { name_en: 'Care Hospital, Palghar', name_mr: 'केअर रुग्णालय, पालघर', contact: '02525-221222', lat: 19.6870, lng: 72.7540, diseases: 'त्वचारोग' },
+    { name_en: 'Primary Health Center, Palghar', name_mr: 'प्राथमिक आरोग्य केंद्र, पालघर', contact: '02525-221333', lat: 19.6880, lng: 72.7550, diseases: 'सामान्य आजार' },
+    { name_en: 'Sanjeevani Hospital, Palghar', name_mr: 'संजीवनी रुग्णालय, पालघर', contact: '02525-221444', lat: 19.6890, lng: 72.7560, diseases: 'हृदय रोग' },
+    { name_en: 'Golden Hospital, Palghar', name_mr: 'गोल्डन रुग्णालय, पालघर', contact: '02525-221555', lat: 19.6900, lng: 72.7570, diseases: 'शस्त्रक्रिया' }
+  ];
+} else if (d === 'Parbhani') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Parbhani (Government)', name_mr: 'जिल्हा रुग्णालय, परभणी (शासकीय)', contact: '02452-220123', lat: 19.2700, lng: 76.7700, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Civil Hospital, Parbhani', name_mr: 'सिव्हिल रुग्णालय, परभणी', contact: '02452-220456', lat: 19.2710, lng: 76.7710, diseases: 'बालरोग' },
+    { name_en: 'Shree Hospital, Parbhani', name_mr: 'श्री रुग्णालय, परभणी', contact: '02452-220789', lat: 19.2720, lng: 76.7720, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Parbhani Rural Hospital', name_mr: 'परभणी ग्रामीण रुग्णालय', contact: '02452-221111', lat: 19.2730, lng: 76.7730, diseases: 'ग्रामीण आजार' },
+    { name_en: 'Care Hospital, Parbhani', name_mr: 'केअर रुग्णालय, परभणी', contact: '02452-221222', lat: 19.2740, lng: 76.7740, diseases: 'त्वचारोग' },
+    { name_en: 'Primary Health Center, Parbhani', name_mr: 'प्राथमिक आरोग्य केंद्र, परभणी', contact: '02452-221333', lat: 19.2750, lng: 76.7750, diseases: 'सामान्य आजार' },
+    { name_en: 'Sanjeevani Hospital, Parbhani', name_mr: 'संजीवनी रुग्णालय, परभणी', contact: '02452-221444', lat: 19.2760, lng: 76.7760, diseases: 'हृदय रोग' },
+    { name_en: 'Golden Hospital, Parbhani', name_mr: 'गोल्डन रुग्णालय, परभणी', contact: '02452-221555', lat: 19.2770, lng: 76.7770, diseases: 'शस्त्रक्रिया' }
+  ];
+} else if (d === 'Pune') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Pune (Government)', name_mr: 'जिल्हा रुग्णालय, पुणे (शासकीय)', contact: '020-26122222', lat: 18.5204, lng: 73.8567, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'Ruby Hall Clinic, Pune', name_mr: 'रुबी हॉल क्लिनिक, पुणे', contact: '020-26123333', lat: 18.5210, lng: 73.8570, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Sahyadri Hospital, Pune', name_mr: 'सह्याद्री रुग्णालय, पुणे', contact: '020-26124444', lat: 18.5220, lng: 73.8580, diseases: 'हृदय रोग' },
+    { name_en: 'Jehangir Hospital, Pune', name_mr: 'जेहांगिर रुग्णालय, पुणे', contact: '020-26125555', lat: 18.5230, lng: 73.8590, diseases: 'बालरोग' },
+    { name_en: 'Aditya Birla Memorial Hospital', name_mr: 'आदित्य बिरला मेमोरियल रुग्णालय', contact: '020-26126666', lat: 18.5240, lng: 73.8600, diseases: 'प्रसूती' },
+    { name_en: 'Columbia Asia Hospital, Pune', name_mr: 'कोलंबिया एशिया रुग्णालय, पुणे', contact: '020-26127777', lat: 18.5250, lng: 73.8610, diseases: 'जनरल' },
+    { name_en: 'Deenanath Mangeshkar Hospital', name_mr: 'दीनानाथ मंगेशकर रुग्णालय', contact: '020-26128888', lat: 18.5260, lng: 73.8620, diseases: 'शस्त्रक्रिया' },
+    { name_en: 'Primary Health Center, Pune', name_mr: 'प्राथमिक आरोग्य केंद्र, पुणे', contact: '020-26129999', lat: 18.5270, lng: 73.8630, diseases: 'सामान्य आजार' }
+  ];
+  } else if (d === 'Raigad') { 
+  hospitals[d] = [
+    { name_en: 'District Hospital, Alibag (Government)', name_mr: 'जिल्हा रुग्णालय, अलीबाग (शासकीय)', contact: '02141-222101', lat: 18.6414, lng: 72.8740, diseases: 'सर्वसाधारण आजार' },
+    { name_en: 'MGM Hospital, Panvel', name_mr: 'एमजीएम रुग्णालय, पनवेल', contact: '022-27436666', lat: 18.9894, lng: 73.1160, diseases: 'मल्टीस्पेशालिटी' },
+    { name_en: 'Ashtvinayak Hospital, Pen', name_mr: 'अष्टविनायक रुग्णालय, पेण', contact: '02143-252550', lat: 18.7400, lng: 73.0930, diseases: 'हृदय रोग, मधुमेह' },
+    { name_en: 'Sanjeevani Hospital, Uran', name_mr: 'संजीवनी रुग्णालय, उरण', contact: '022-27222222', lat: 18.8780, lng: 72.9390, diseases: 'जनरल, त्वचारोग' },
+    { name_en: 'Raigad Rural Hospital, Roha', name_mr: 'रायगड ग्रामीण रुग्णालय, रोहा', contact: '02194-234511', lat: 18.4361, lng: 73.1178, diseases: 'ग्रामीण आजार' },
+    { name_en: 'Sub District Hospital, Karjat', name_mr: 'उपजिल्हा रुग्णालय, कर्जत', contact: '02148-222520', lat: 18.9106, lng: 73.3235, diseases: 'सामान्य आजार, अपघात सेवा' },
+    { name_en: 'Primary Health Center, Mangaon', name_mr: 'प्राथमिक आरोग्य केंद्र, माणगाव', contact: '02140-262512', lat: 18.0584, lng: 73.3242, diseases: 'सामान्य आजार' },
+    { name_en: 'Dr. Patil Hospital, Mahad', name_mr: 'डॉ. पाटील रुग्णालय, महाड', contact: '02145-222045', lat: 18.0833, lng: 73.4072, diseases: 'बालरोग, प्रसूती' }
+  ];
+} else if (d === 'Ratnagiri') { 
+  hospitals[d] = [
+    { name_en: 'District Hospital, Ratnagiri (Government)', name_mr: 'जिल्हा रुग्णालय, रत्नागिरी (शासकीय)', contact: '02352-222101', lat: 16.9918, lng: 73.3105, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Chiplun', name_mr: 'सिव्हिल रुग्णालय, चिपळूण', contact: '02355-252343', lat: 17.5351, lng: 73.5093, diseases: 'जनरल, बालरोग' },
+    { name_en: 'Sub District Hospital, Dapoli', name_mr: 'उपजिल्हा रुग्णालय, दापोली', contact: '02358-280211', lat: 17.7596, lng: 73.1863, diseases: 'मधुमेह, त्वचारोग' },
+    { name_en: 'Rural Hospital, Mandangad', name_mr: 'ग्रामीण रुग्णालय, मंडणगड', contact: '02350-263034', lat: 17.9860, lng: 73.2523, diseases: 'ग्रामीण आरोग्य सेवा' },
+    { name_en: 'Ratnadurga Hospital, Ratnagiri', name_mr: 'रत्नदुर्ग रुग्णालय, रत्नागिरी', contact: '02352-225123', lat: 16.9944, lng: 73.3072, diseases: 'हृदय विकार, रक्तदाब' },
+    { name_en: 'Sahyadri Hospital, Ratnagiri', name_mr: 'सह्याद्री रुग्णालय, रत्नागिरी', contact: '02352-223456', lat: 16.9935, lng: 73.3098, diseases: 'शस्त्रक्रिया, मल्टीस्पेशालिटी' },
+    { name_en: 'Primary Health Center, Sangameshwar', name_mr: 'प्राथमिक आरोग्य केंद्र, संगमेश्वर', contact: '02354-270221', lat: 17.2160, lng: 73.5163, diseases: 'सामान्य ताप, खोकला' },
+    { name_en: 'Naman Hospital, Chiplun', name_mr: 'नमन रुग्णालय, चिपळूण', contact: '02355-251010', lat: 17.5348, lng: 73.5075, diseases: 'प्रसूती, बालरोग' }
+  ];
+} else if (d === 'Sangli') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Sangli (Government)', name_mr: 'जिल्हा रुग्णालय, सांगली (शासकीय)', contact: '0233-2376800', lat: 16.8524, lng: 74.5815, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Miraj', name_mr: 'सिव्हिल रुग्णालय, मिरज', contact: '0233-2222000', lat: 16.8315, lng: 74.6441, diseases: 'बालरोग, सर्जरी' },
+    { name_en: 'Wanless Hospital, Miraj', name_mr: 'वानलेस रुग्णालय, मिरज', contact: '0233-2212771', lat: 16.8229, lng: 74.6415, diseases: 'हृदय, मधुमेह, प्रसूती' },
+    { name_en: 'Dr. Patankar Hospital, Sangli', name_mr: 'डॉ. पाटणकर रुग्णालय, सांगली', contact: '0233-2377250', lat: 16.8553, lng: 74.5868, diseases: 'त्वचारोग, मल्टीस्पेशालिटी' },
+    { name_en: 'Sanjeevani Hospital, Islampur', name_mr: 'संजीवनी रुग्णालय, इस्लामपूर', contact: '02342-222933', lat: 17.0373, lng: 74.2689, diseases: 'जनरल, स्त्रीरोग' },
+    { name_en: 'Sub District Hospital, Tasgaon', name_mr: 'उपजिल्हा रुग्णालय, तासगाव', contact: '02346-252033', lat: 17.0375, lng: 74.6014, diseases: 'सामान्य तपासणी' },
+    { name_en: 'Rural Hospital, Jat', name_mr: 'ग्रामीण रुग्णालय, जत', contact: '02345-245221', lat: 17.0444, lng: 75.1706, diseases: 'ग्रामीण आरोग्य सेवा' },
+    { name_en: 'Primary Health Center, Kavathe Mahankal', name_mr: 'प्राथमिक आरोग्य केंद्र, कवठेमहांकाळ', contact: '02344-262041', lat: 17.0170, lng: 74.8686, diseases: 'सर्दी, ताप, खोकला' }
+  ];
+  } else if (d === 'Satara') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Satara (Government)', name_mr: 'जिल्हा रुग्णालय, सातारा (शासकीय)', contact: '02162-234141', lat: 17.6868, lng: 73.9930, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Civil Hospital, Karad', name_mr: 'सिव्हिल रुग्णालय, कराड', contact: '02164-222240', lat: 17.2837, lng: 74.1811, diseases: 'प्रसूती, बालरोग' },
+    { name_en: 'Shri Hospital, Satara', name_mr: 'श्री रुग्णालय, सातारा', contact: '02162-233404', lat: 17.6886, lng: 73.9955, diseases: 'मधुमेह, हृदय' },
+    { name_en: 'Krishna Hospital, Karad', name_mr: 'कृष्णा रुग्णालय, कराड', contact: '02164-241555', lat: 17.2784, lng: 74.1819, diseases: 'सर्जरी, मल्टीस्पेशालिटी' },
+    { name_en: 'Rural Hospital, Wai', name_mr: 'ग्रामीण रुग्णालय, वाई', contact: '02167-223320', lat: 17.9523, lng: 73.8195, diseases: 'ग्रामीण आजार, जनरल तपासणी' },
+    { name_en: 'Primary Health Center, Mahabaleshwar', name_mr: 'प्राथमिक आरोग्य केंद्र, महाबळेश्वर', contact: '02168-260321', lat: 17.9237, lng: 73.6586, diseases: 'सर्दी, ताप, खोकला' },
+    { name_en: 'Sanjeevani Hospital, Satara', name_mr: 'संजीवनी रुग्णालय, सातारा', contact: '02162-234543', lat: 17.6855, lng: 73.9921, diseases: 'हृदय, त्वचारोग' },
+    { name_en: 'Rural Hospital, Patan', name_mr: 'ग्रामीण रुग्णालय, पाटण', contact: '02165-222021', lat: 17.3720, lng: 73.9012, diseases: 'सामान्य आरोग्य सेवा' }
+  ];
+  } else if (d === 'Sindhudurg') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Oros (Government)', name_mr: 'जिल्हा रुग्णालय, ओरोस (शासकीय)', contact: '02362-228060', lat: 16.0134, lng: 73.5130, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Rural Hospital, Kankavli', name_mr: 'ग्रामीण रुग्णालय, कणकवली', contact: '02367-232040', lat: 16.2685, lng: 73.7125, diseases: 'जनरल, ग्रामीण सेवा' },
+    { name_en: 'Primary Health Center, Sawantwadi', name_mr: 'प्राथमिक आरोग्य केंद्र, सावंतवाडी', contact: '02363-222025', lat: 15.9040, lng: 73.8203, diseases: 'सामान्य आजार' },
+    { name_en: 'Sub District Hospital, Malvan', name_mr: 'उपजिल्हा रुग्णालय, मालवण', contact: '02365-252255', lat: 16.0592, lng: 73.4668, diseases: 'त्वचारोग, प्रसूती' },
+    { name_en: 'Rural Hospital, Vengurla', name_mr: 'ग्रामीण रुग्णालय, वेंगुर्ला', contact: '02366-262101', lat: 15.8625, lng: 73.6334, diseases: 'सामान्य तपासणी' },
+    { name_en: 'Sanjeevani Hospital, Kudal', name_mr: 'संजीवनी रुग्णालय, कुडाळ', contact: '02362-222441', lat: 16.0034, lng: 73.6878, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Navjeevan Hospital, Kankavli', name_mr: 'नवजीवन रुग्णालय, कणकवली', contact: '02367-234567', lat: 16.2740, lng: 73.7140, diseases: 'मल्टीस्पेशालिटी' }
+  ];
+} else if (d === 'Solapur') {
+  hospitals[d] = [
+    { name_en: 'District Civil Hospital, Solapur (Government)', name_mr: 'जिल्हा सिव्हिल रुग्णालय, सोलापूर (शासकीय)', contact: '0217-2312345', lat: 17.6599, lng: 75.9064, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Ashwini Sahakari Rugnalay, Solapur', name_mr: 'अश्विनी सहकारी रुग्णालय, सोलापूर', contact: '0217-2621542', lat: 17.6623, lng: 75.9047, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Dr. Hedgewar Hospital, Solapur', name_mr: 'डॉ. हेडगेवार रुग्णालय, सोलापूर', contact: '0217-2321122', lat: 17.6681, lng: 75.9019, diseases: 'बालरोग, स्त्रीरोग' },
+    { name_en: 'Primary Health Center, Barshi', name_mr: 'प्राथमिक आरोग्य केंद्र, बार्शी', contact: '02184-222512', lat: 18.2346, lng: 75.6925, diseases: 'सामान्य आजार' },
+    { name_en: 'Rural Hospital, Akkalkot', name_mr: 'ग्रामीण रुग्णालय, अक्कलकोट', contact: '02181-222345', lat: 17.5231, lng: 76.2063, diseases: 'ग्रामीण सेवा' },
+    { name_en: 'Siddheshwar Multispeciality Hospital, Solapur', name_mr: 'सिद्धेश्वर मल्टीस्पेशालिटी रुग्णालय, सोलापूर', contact: '0217-2349988', lat: 17.6705, lng: 75.9120, diseases: 'शस्त्रक्रिया, मल्टीस्पेशालिटी' },
+    { name_en: 'Shri Markandeya Rugnalaya, Solapur', name_mr: 'श्री मार्कंडेय रुग्णालय, सोलापूर', contact: '0217-2332211', lat: 17.6652, lng: 75.9093, diseases: 'जनरल, त्वचारोग' }
+  ];
+} else if (d === 'Thane') {
+  hospitals[d] = [
+    { name_en: 'Chhatrapati Shivaji Maharaj Hospital, Kalwa', name_mr: 'छत्रपती शिवाजी महाराज रुग्णालय, काळवा', contact: '022-25343000', lat: 19.2195, lng: 72.9998, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Bethany Hospital, Thane', name_mr: 'बेथनी रुग्णालय, ठाणे', contact: '022-21727899', lat: 19.2073, lng: 72.9717, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Kaushalya Medical Foundation Trust Hospital, Thane', name_mr: 'कौशल्या मेडिकल फाउंडेशन ट्रस्ट रुग्णालय, ठाणे', contact: '022-25343132', lat: 19.1952, lng: 72.9701, diseases: 'स्त्रीरोग, बालरोग' },
+    { name_en: 'Thane Civil Hospital (Government)', name_mr: 'ठाणे सिव्हिल रुग्णालय (शासकीय)', contact: '022-25341646', lat: 19.1915, lng: 72.9706, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Jupiter Hospital, Thane', name_mr: 'ज्युपिटर रुग्णालय, ठाणे', contact: '022-21723733', lat: 19.2006, lng: 72.9729, diseases: 'शस्त्रक्रिया, मल्टीस्पेशालिटी' },
+    { name_en: 'Mira Bhayandar Municipal Hospital', name_mr: 'मीरा भाईंदर महापालिका रुग्णालय', contact: '022-28192600', lat: 19.2851, lng: 72.8574, diseases: 'जनरल, त्वचारोग' }
+  ];
+} else if (d === 'Wardha') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Wardha (Government)', name_mr: 'जिल्हा रुग्णालय, वर्धा (शासकीय)', contact: '07152-240123', lat: 20.7453, lng: 78.6022, diseases: 'सर्वसाधारण आजार, आपत्कालीन सेवा' },
+    { name_en: 'Acharya Vinoba Bhave Rural Hospital, Sawangi', name_mr: 'आचार्य विनोबा भावे ग्रामीण रुग्णालय, सावंगी', contact: '07152-287701', lat: 20.7468, lng: 78.5974, diseases: 'मल्टीस्पेशालिटी, शस्त्रक्रिया' },
+    { name_en: 'Lata Mangeshkar Hospital, Wardha', name_mr: 'लता मंगेशकर रुग्णालय, वर्धा', contact: '07152-287500', lat: 20.7432, lng: 78.6020, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Rural Hospital, Hinganghat', name_mr: 'ग्रामीण रुग्णालय, हिंगणघाट', contact: '07158-262123', lat: 20.5470, lng: 78.8366, diseases: 'ग्रामीण सेवा, बालरोग' }
+  ];
+} else if (d === 'Washim') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Washim (Government)', name_mr: 'जिल्हा रुग्णालय, वाशिम (शासकीय)', contact: '07252-232123', lat: 20.1118, lng: 77.1386, diseases: 'सर्वसाधारण आजार, प्रसूती' },
+    { name_en: 'Sub District Hospital, Risod', name_mr: 'उपजिल्हा रुग्णालय, रिसोड', contact: '07256-220123', lat: 19.9754, lng: 77.5392, diseases: 'प्रसूती, त्वचारोग' },
+    { name_en: 'Sanjeevani Hospital, Washim', name_mr: 'संजीवनी रुग्णालय, वाशिम', contact: '07252-240123', lat: 20.1200, lng: 77.1420, diseases: 'हृदय, जनरल' },
+    { name_en: 'Rural Hospital, Malegaon', name_mr: 'ग्रामीण रुग्णालय, मालेगाव', contact: '07258-223456', lat: 20.3001, lng: 77.1501, diseases: 'ग्रामीण सेवा' }
+  ];
+} else if (d === 'Yavatmal') {
+  hospitals[d] = [
+    { name_en: 'District Hospital, Yavatmal (Government)', name_mr: 'जिल्हा रुग्णालय, यवतमाळ (शासकीय)', contact: '07232-240123', lat: 20.3888, lng: 78.1204, diseases: 'सर्वसाधारण आजार, बालरोग' },
+    { name_en: 'Rural Hospital, Pusad', name_mr: 'ग्रामीण रुग्णालय, पुुसद', contact: '07233-222123', lat: 19.9091, lng: 77.5833, diseases: 'ग्रामीण सेवा, जनरल' },
+    { name_en: 'Sanjeevani Hospital, Yavatmal', name_mr: 'संजीवनी रुग्णालय, यवतमाळ', contact: '07232-245678', lat: 20.3933, lng: 78.1221, diseases: 'हृदय, मधुमेह' },
+    { name_en: 'Dr. Hedgewar Hospital, Yavatmal', name_mr: 'डॉ. हेडगेवार रुग्णालय, यवतमाळ', contact: '07232-246789', lat: 20.3900, lng: 78.1185, diseases: 'मल्टीस्पेशालिटी' }
+  ];
+
+  
+  }
+});
+  
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById('title').textContent = translations[lang].title;
+      document.getElementById('diseaseInput').placeholder = translations[lang].searchPlaceholder;
+      document.querySelector('.search-section button').textContent = translations[lang].searchButton;
+    }
+
+    function updateAutocomplete() {
+      const list = document.getElementById("diseaseSuggestions");
+      list.innerHTML = '';
+      diseaseList.forEach(d => {
+        const option = document.createElement("option");
+        option.value = `${d.en} / ${d.mr}`;
+        list.appendChild(option);
+      });
+    }
+
+    function searchDisease() {
+      const input = document.getElementById('diseaseInput').value.trim().toLowerCase();
+      const selectedDistrict = document.getElementById('districtSelect').value;
+      const hospitalContainer = document.getElementById('hospitalResults');
+      const tabletContainer = document.getElementById('tabletResults');
+      hospitalContainer.innerHTML = '';
+      tabletContainer.innerHTML = '';
+
+      if (!selectedDistrict) {
+        alert("Please select a district.");
+        return;
+      }
+
+      const diseaseKey = diseaseList.find(d =>
+        input.includes(d.en.toLowerCase()) || input.includes(d.mr.toLowerCase())
+      );
+      const key = diseaseKey ? diseaseKey.en.toLowerCase() : input;
+
+      hospitals[selectedDistrict].forEach(h => {
+  hospitalContainer.innerHTML += `
+    <div class="card">
+      <h3>${h.name_en} / ${h.name_mr}</h3>
+      <p><strong>Contact:</strong> ${h.contact}</p>
+      <p><strong>रुग्णालयातील आजार/तज्ञ:</strong> ${h.diseases}</p>
+      <iframe class="map-iframe" src="https://www.google.com/maps?q=${h.lat},${h.lng}&hl=es;z=14&output=embed"></iframe>
+    </div>
+  `;
+});
+const relatedTablets = tabletsByDisease[key];
+if (relatedTablets) {
+  tabletContainer.innerHTML = '';
+  relatedTablets.forEach(tab => {
+    tabletContainer.innerHTML += `
+      <div class="card">
+        <h3>${tab.name}</h3> <!-- using 'name' -->
+        <p><strong>Use (EN):</strong> ${tab.use_en}</p>
+        <p><strong>Use (MR):</strong> ${tab.use_mr}</p>
+        <button class="tablet-button" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(tab.name)}', '_blank')">Search</button>
+      </div>
+    `;
+  });
+
+      } else {
+        tabletContainer.innerHTML = `<p>No tablets found for this disease.</p>`;
+      }
+    }
+
+    window.onload = function () {
+      const select = document.getElementById("districtSelect");
+      allDistricts.forEach(d => {
+        const option = document.createElement("option");
+        option.value = d;
+        option.textContent = d;
+        select.appendChild(option);
+      });
+      updateAutocomplete();
+      google.load("elements", "1", {
+        packages: "transliteration",
+        callback: function () {
+          const options = {
+            sourceLanguage: google.elements.transliteration.LanguageCode.ENGLISH,
+            destinationLanguage: [google.elements.transliteration.LanguageCode.MARATHI],
+            transliterationEnabled: true
+          };
+          const control = new google.elements.transliteration.TransliterationControl(options);
+          control.makeTransliteratable(["diseaseInput"]);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+  
